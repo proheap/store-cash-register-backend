@@ -1,0 +1,38 @@
+version: "3.7"
+services:    
+    mongodb:
+        container_name: database_scr
+        image: mongo:4.4.10
+        ports:
+            - "${DB_PORT}:27017"
+        networks:
+            - store-cash-register
+        restart: unless-stopped
+        env_file:
+            - ./.env
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: ${DB_UNAME}
+            MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
+        volumes:
+            - "./mongo-entrypoint:/docker-entrypoint-initdb.d"
+    scr-be:
+        container_name: rest_scr
+        build:
+            context: .
+            args:
+                PORT: ${BE_PORT}
+        ports:
+            - "${BE_PORT}:3000"
+        networks:
+            - store-cash-register
+        restart: unless-stopped
+        depends_on:
+            - mongodb
+        env_file:
+            - ./.env
+        volumes:
+            - "./:/urs/src/app"
+            - "/urs/src/app/node_modules"
+networks:
+    store-cash-register:
+        driver: bridge
