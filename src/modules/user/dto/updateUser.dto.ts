@@ -6,4 +6,19 @@ export class UpdateUserDto {
 
   @IsString()
   lastName: string;
+
+  @IsString()
+  city: string;
+
+  @IsString()
+  street: string;
+
+  @IsString()
+  apartment: string;
+
+  @IsString()
+  postalCode: string;
+
+  @IsString()
+  country: string;
 }
