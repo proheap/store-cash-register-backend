@@ -29,7 +29,7 @@ export class User extends Document {
   @Prop({ type: AddressSchema, required: false })
   address: Address;
 
-  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, required: false, ref: CartItem.name }] })
+  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, required: false, ref: CartItem.name }], default: [] })
   cart: [MongooseSchema.Types.ObjectId];
 }
 
