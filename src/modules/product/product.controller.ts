@@ -54,6 +54,21 @@ export class ProductController {
     }
   }
 
+  @Post('api/product/:productId/user/:userId/add')
+  async addProductToCart(
+    @Param('productId') productId: MongooseSchema.Types.ObjectId,
+    @Param('userId') userId: MongooseSchema.Types.ObjectId,
+    @Body('quantity') quantity: number,
+    @Res() res: Response,
+  ) {
+    try {
+      const cart: any = await this.productService.addProductToCart(userId, productId, quantity);
+      return res.status(HttpStatus.OK).send(cart);
+    } catch (error) {
+      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+    }
+  }
+
   @Get('api/products')
   async listProducts(@Res() res: Response) {
     try {

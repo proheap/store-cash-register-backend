@@ -9,7 +9,7 @@ import { LoginDto } from './dto/login.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 
-const logInfo = { label: 'USER-SERVICE' };
+const logLabel = 'USER-SERVICE';
 
 @Injectable()
 export class UserService {
@@ -18,7 +18,7 @@ export class UserService {
   async registerUser(registerDto: RegisterDto) {
     let user = await this.getUserByEmail(registerDto.email);
     if (user) {
-      errorHandlingException(logInfo, null, true, errorTypes.CONFLICT, 'User already exists');
+      errorHandlingException(logLabel, null, true, errorTypes.CONFLICT, 'User already exists');
     }
     user = new this.userModel({
       username: registerDto.username,
@@ -35,10 +35,10 @@ export class UserService {
       user = await user.save();
       user = await this.userModel.findOne({ _id: user._id }).select('-password').exec();
     } catch (error) {
-      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
     if (!user) {
-      errorHandlingException(logInfo, null, true, errorTypes.CONFLICT, 'User not created');
+      errorHandlingException(logLabel, null, true, errorTypes.CONFLICT, 'User not created');
     }
     return user;
   }
@@ -48,10 +48,10 @@ export class UserService {
     try {
       user = await this.userModel.findOne({ username: loginDto.username, password: loginDto.password }).select('-password').exec();
       if (!user) {
-        errorHandlingException(logInfo, null, true, errorTypes.NOT_FOUND, 'User not found');
+        errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User not found');
       }
     } catch (error) {
-      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
     return user;
   }
@@ -61,10 +61,10 @@ export class UserService {
     try {
       user = await this.userModel.findById({ _id: id }).select('-password').exec();
     } catch (error) {
-      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
     if (!user) {
-      errorHandlingException(logInfo, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
     }
     return user;
   }
@@ -82,10 +82,10 @@ export class UserService {
       user.address.country = updateUserDto.country;
       user = await user.save();
     } catch (error) {
-      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
     if (!user) {
-      errorHandlingException(logInfo, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
     }
     return user;
   }
@@ -98,10 +98,10 @@ export class UserService {
       user = await user.save();
       user = await this.userModel.findById({ _id: user.id }).select('-password').exec();
     } catch (error) {
-      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
     if (!user) {
-      errorHandlingException(logInfo, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
     }
     return user;
   }
@@ -111,10 +111,10 @@ export class UserService {
     try {
       user = await this.userModel.findByIdAndDelete({ _id: id });
     } catch (error) {
-      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
     if (!user) {
-      errorHandlingException(logInfo, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
     }
     return user;
   }
@@ -124,7 +124,7 @@ export class UserService {
     try {
       user = await this.userModel.findOne({ email: email });
     } catch (error) {
-      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
     return user;
   }
@@ -134,7 +134,7 @@ export class UserService {
     try {
       user = await this.userModel.findOne({ username: username });
     } catch (error) {
-      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
     return user;
   }
@@ -144,7 +144,7 @@ export class UserService {
     try {
       users = await this.userModel.find({}).select('-password').exec();
     } catch (error) {
-      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
     return users;
   }

@@ -4,19 +4,25 @@ import { ClientSession, Model, Schema as MongooseSchema } from 'mongoose';
 import { errorHandlingException, errorTypes } from '../../helpers/logger.helper';
 
 import { Product } from '../../models/product.model';
+import { CartItem } from 'src/models/cartItem.model';
+import { User } from 'src/models/user.model';
 import { CreateProductDto } from './dto/createProduct.dto';
 import { UpdateProductDto } from './dto/updateProduct.dto';
 
-const logInfo = { label: 'PRODUCT-SERVICE' };
+const logLabel = 'PRODUCT-SERVICE';
 
 @Injectable()
 export class ProductService {
-  constructor(@InjectModel(Product.name) private readonly productModel: Model<Product>) {}
+  constructor(
+    @InjectModel(Product.name) private readonly productModel: Model<Product>,
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(CartItem.name) private readonly cartItemModel: Model<CartItem>,
+  ) {}
 
   async createProduct(createProductDto: CreateProductDto) {
     let product = await this.productModel.findOne({ title: createProductDto.title });
     if (product) {
-      errorHandlingException(logInfo, null, true, errorTypes.CONFLICT, 'Product already exists');
+      errorHandlingException(logLabel, null, true, errorTypes.CONFLICT, 'Product already exists');
     }
     product = new this.productModel({
       title: createProductDto.title,
@@ -27,10 +33,10 @@ export class ProductService {
     try {
       product = await product.save();
     } catch (error) {
-      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
     if (!product) {
-      errorHandlingException(logInfo, null, true, errorTypes.CONFLICT, 'Product not created');
+      errorHandlingException(logLabel, null, true, errorTypes.CONFLICT, 'Product not created');
     }
     return product;
   }
@@ -40,10 +46,10 @@ export class ProductService {
     try {
       product = await this.productModel.findById({ _id: id });
     } catch (error) {
-      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
     if (!product) {
-      errorHandlingException(logInfo, null, true, errorTypes.NOT_FOUND, 'Product with ID not found');
+      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'Product with ID not found');
     }
     return product;
   }
@@ -58,10 +64,10 @@ export class ProductService {
       product.quantity = updateProductDto.quantity;
       product = await product.save();
     } catch (error) {
-      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
     if (!product) {
-      errorHandlingException(logInfo, null, true, errorTypes.NOT_FOUND, 'Product with ID not found');
+      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'Product with ID not found');
     }
     return product;
   }
@@ -71,12 +77,36 @@ export class ProductService {
     try {
       product = this.productModel.findByIdAndDelete({ _id: id });
     } catch (error) {
-      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
     if (!product) {
-      errorHandlingException(logInfo, null, true, errorTypes.NOT_FOUND, 'Product with ID not found');
+      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'Product with ID not found');
     }
     return product;
+  }
+
+  async addProductToCart(userId: MongooseSchema.Types.ObjectId, productId: MongooseSchema.Types.ObjectId, quantity: number) {
+    let product: any, user: any;
+    try {
+      user = await this.userModel.findById({ _id: userId });
+      product = await this.productModel.findById({ _id: productId });
+    } catch (error) {
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+    }
+    if (!user) {
+      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+    }
+    if (!product) {
+      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'Product with ID not found');
+    }
+    const cartItem = new this.cartItemModel({
+      product: productId,
+      quantity: quantity,
+    });
+    console.log(user);
+    user.cart.push(cartItem);
+    user.save();
+    return cartItem;
   }
 
   async listProducts() {
@@ -84,7 +114,7 @@ export class ProductService {
     try {
       products = await this.productModel.find();
     } catch (error) {
-      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
     return products;
   }
