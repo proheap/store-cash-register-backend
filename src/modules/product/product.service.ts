@@ -22,6 +22,7 @@ export class ProductService {
       title: createProductDto.title,
       description: createProductDto.description,
       price: createProductDto.price,
+      quantity: createProductDto.price,
     });
     try {
       product = await product.save();
@@ -54,6 +55,8 @@ export class ProductService {
       product.title = updateProductDto.title;
       product.description = updateProductDto.description;
       product.price = updateProductDto.price;
+      product.quantity = updateProductDto.quantity;
+      product = await product.save();
     } catch (error) {
       errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
     }
@@ -66,7 +69,7 @@ export class ProductService {
   async deleteProduct(id: MongooseSchema.Types.ObjectId) {
     let product: any;
     try {
-      product = await this.productModel.findByIdAndDelete({ _id: id });
+      product = this.productModel.findByIdAndDelete({ _id: id });
     } catch (error) {
       errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
     }

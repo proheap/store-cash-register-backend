@@ -6,6 +6,8 @@ import { errorHandlingException, errorTypes } from '../../helpers/logger.helper'
 import { User } from '../../models/user.model';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { UpdateUserDto } from './dto/updateUser.dto';
+import { ChangePasswordDto } from './dto/changePassword.dto';
 
 const logInfo = { label: 'USER-SERVICE' };
 
@@ -49,10 +51,10 @@ export class UserService {
     return user;
   }
 
-  async deleteUser(id: MongooseSchema.Types.ObjectId) {
+  async getUserById(id: MongooseSchema.Types.ObjectId) {
     let user: any;
     try {
-      user = await this.userModel.deleteOne({ _id: id });
+      user = await this.userModel.findById({ _id: id }, 'username email firstName lastName role').exec();
     } catch (error) {
       errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
     }
@@ -62,10 +64,42 @@ export class UserService {
     return user;
   }
 
-  async getUserById(id: MongooseSchema.Types.ObjectId) {
+  async updateUser(id: MongooseSchema.Types.ObjectId, updateUserDto: UpdateUserDto) {
     let user: any;
     try {
       user = await this.userModel.findById({ _id: id }, 'username email firstName lastName role').exec();
+      user.firstName = updateUserDto.firstName;
+      user.lastName = updateUserDto.lastName;
+      user = await user.save();
+    } catch (error) {
+      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+    }
+    if (!user) {
+      errorHandlingException(logInfo, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+    }
+    return user;
+  }
+
+  async changePassword(id: MongooseSchema.Types.ObjectId, changePassword: ChangePasswordDto) {
+    let user: any;
+    try {
+      user = await this.userModel.findById({ _id: id });
+      user.password = changePassword.password;
+      user = await user.save();
+      user = await this.userModel.findById({ _id: user.id }, 'username email firstName lastName role').exec();
+    } catch (error) {
+      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+    }
+    if (!user) {
+      errorHandlingException(logInfo, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+    }
+    return user;
+  }
+
+  async deleteUser(id: MongooseSchema.Types.ObjectId) {
+    let user: any;
+    try {
+      user = await this.userModel.findByIdAndDelete({ _id: id });
     } catch (error) {
       errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
     }
