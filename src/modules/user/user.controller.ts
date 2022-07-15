@@ -5,6 +5,7 @@ import { Connection, Schema as MongooseSchema } from 'mongoose';
 import { errorHandlingException, errorTypes } from 'src/helpers/logger.helper';
 import { UserService } from './user.service';
 import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 const logLabel = 'USER-CONTROLLER';
 
@@ -23,10 +24,10 @@ export class UserController {
   }
 
   @Post('api/user/login')
-  async login(@Body() registerDto: RegisterDto, @Res() res: Response) {
+  async login(@Body() loginDto: LoginDto, @Res() res: Response) {
     try {
-      const newUser: any = await this.userService.loginUser(registerDto);
-      return res.status(HttpStatus.CREATED).send(newUser);
+      const user: any = await this.userService.loginUser(loginDto);
+      return res.status(HttpStatus.OK).send(user);
     } catch (error) {
       errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
     }
@@ -53,9 +54,9 @@ export class UserController {
   }
 
   @Get('api/users')
-  async getAllUsers(@Res() res: Response) {
+  async listUsers(@Res() res: Response) {
     try {
-      const users: any = await this.userService.getAllUsers();
+      const users: any = await this.userService.listUsers();
       return res.status(HttpStatus.OK).send(users);
     } catch (error) {
       errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);

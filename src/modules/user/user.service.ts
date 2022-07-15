@@ -26,6 +26,7 @@ export class UserService {
     });
     try {
       user = await user.save();
+      user = await this.userModel.findOne({ _id: user._id }, 'username email firstName lastName role').exec();
     } catch (error) {
       errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
     }
@@ -36,9 +37,12 @@ export class UserService {
   }
 
   async loginUser(loginDto: LoginDto) {
-    let user;
+    let user: any;
     try {
-      user = await this.userModel.findOne({ loginDto }, 'username password').exec();
+      user = await this.userModel.findOne({ username: loginDto.username, password: loginDto.password }, 'username email firstName lastName role').exec();
+      if (!user) {
+        errorHandlingException(logInfo, null, true, errorTypes.NOT_FOUND, 'User not found');
+      }
     } catch (error) {
       errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
     }
@@ -46,9 +50,9 @@ export class UserService {
   }
 
   async deleteUser(id: MongooseSchema.Types.ObjectId) {
-    let user;
+    let user: any;
     try {
-      user = await this.userModel.findByIdAndDelete({ _id: id });
+      user = await this.userModel.deleteOne({ _id: id });
     } catch (error) {
       errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
     }
@@ -59,9 +63,9 @@ export class UserService {
   }
 
   async getUserById(id: MongooseSchema.Types.ObjectId) {
-    let user;
+    let user: any;
     try {
-      user = await this.userModel.findById({ _id: id });
+      user = await this.userModel.findById({ _id: id }, 'username email firstName lastName role').exec();
     } catch (error) {
       errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
     }
@@ -72,19 +76,29 @@ export class UserService {
   }
 
   async getUserByEmail(email: string) {
-    let user;
+    let user: any;
     try {
-      user = await this.userModel.findOne({ email }, 'username email img role').exec();
+      user = await this.userModel.findOne({ email: email });
     } catch (error) {
       errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
     }
     return user;
   }
 
-  async getAllUsers() {
-    let users;
+  async getUserByUsername(username: string) {
+    let user: any;
     try {
-      users = await this.userModel.find();
+      user = await this.userModel.findOne({ username: username });
+    } catch (error) {
+      errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
+    }
+    return user;
+  }
+
+  async listUsers() {
+    let users = [];
+    try {
+      users = await this.userModel.find({}, 'username email firstName lastName role').exec();
     } catch (error) {
       errorHandlingException(logInfo, error, true, errorTypes.INTERNAL_SERVER);
     }

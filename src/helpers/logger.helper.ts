@@ -25,12 +25,12 @@ function throwError(logLabel: string, throwErrorType = errorTypes.DEFAULT, messa
 
 export function errorHandlingException(logLabel, error, throwErrorBool = false, throwErrorType = errorTypes.DEFAULT, messageText = undefined) {
   if (error !== null) {
-    console.log(`${Date.now()} [${logLabel}]: ${error} (${messageText})`);
+    console.log(`${new Date()} [${logLabel}]: ${error} (${messageText})`);
     if (throwErrorBool) {
       throwError(logLabel, throwErrorType, error);
     }
   } else {
-    console.log(`${Date.now()} [${logLabel}]: ${messageText}`);
+    console.log(`${new Date()} [${logLabel}]: ${messageText}`);
     if (throwErrorBool) {
       throwError(logLabel, throwErrorType, messageText);
     }
