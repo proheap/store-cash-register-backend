@@ -3,8 +3,8 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Connection, Schema as MongooseSchema } from 'mongoose';
 import { errorHandlingException, errorTypes } from 'src/helpers/logger.helper';
-import { ProductService } from './product.service';
 
+import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/createProduct.dto';
 import { UpdateProductDto } from './dto/updateProduct.dto';
 
@@ -48,7 +48,7 @@ export class ProductController {
   async deleteProduct(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
     try {
       await this.productService.deleteProduct(id);
-      return res.status(HttpStatus.NO_CONTENT);
+      return res.status(HttpStatus.NO_CONTENT).send();
     } catch (error) {
       errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
     }
