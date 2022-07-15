@@ -34,6 +34,15 @@ services:
             MONGO_INITDB_ROOT_PASSWORD: ${INIT_DB_PASSWORD}
         volumes:
             - ./mongo-entrypoint/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+            - ./mongo-entrypoint/replica.key:/data/replica.key
+        entrypoint:
+            - bash
+            - -c
+            - |
+                chmod 400 /data/replica.key
+                chown 999:999 /data/replica.key
+                exec docker-entrypoint.sh $$@     
+        command: mongod --replSet rs --bind_ip_all --keyFile /data/replica.key
 networks:
     scr-network:
         driver: bridge
