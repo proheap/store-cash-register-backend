@@ -45,7 +45,7 @@ export class CartService {
     let user: any, cartItem: any;
     try {
       user = await this.userModel.findById({ _id: userId });
-      cartItem = await this.cartItemModel.findOne({ product: productId });
+      cartItem = await this.cartItemModel.updateOne({ product: productId }, { quantity: quantity });
     } catch (error) {
       errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
     }
@@ -55,8 +55,6 @@ export class CartService {
     if (!cartItem) {
       errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'Cart item not found');
     }
-    cartItem.quantity = quantity;
-    cartItem.save();
     return cartItem;
   }
 

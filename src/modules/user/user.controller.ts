@@ -1,44 +1,52 @@
-import { BE_ROUTE_PREFIX } from '../../configs/app.config';
-import { Controller, Post, Get, Put, Delete, Body, Param, Res, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Put, Delete, Body, Param, Res, HttpStatus } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Connection, Schema as MongooseSchema } from 'mongoose';
+import { appConstants } from '../../configs/app.config';
 import { errorHandlingException, errorTypes } from '../../helpers/logger.helper';
 
 import { UserService } from './user.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
+import { GetCurrentUserId } from '../../common/decorators/getCurrentUserId.decorator';
 
 const logLabel = 'USER-CONTROLLER';
-const userRoute = `${BE_ROUTE_PREFIX}/user`;
 
-@Controller()
+@Controller(`${appConstants.appRoutePrefix}/user`)
 export class UserController {
   constructor(@InjectConnection() private readonly mongoConnection: Connection, private userService: UserService) {}
 
-  @Post(`${userRoute}/register`)
-  async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
+  @Get()
+  async getLoggedUser(@GetCurrentUserId() id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
     try {
-      const newUser: any = await this.userService.registerUser(registerDto);
-      return res.status(HttpStatus.CREATED).send(newUser);
-    } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
-    }
-  }
-
-  @Post(`${userRoute}/login`)
-  async login(@Body() loginDto: LoginDto, @Res() res: Response) {
-    try {
-      const user: any = await this.userService.loginUser(loginDto);
+      const user: any = await this.userService.getUserById(id);
       return res.status(HttpStatus.OK).send(user);
     } catch (error) {
       errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
     }
   }
 
-  @Get(`${userRoute}/:id`)
+  @Put()
+  async updateLoggedUser(@GetCurrentUserId() id: MongooseSchema.Types.ObjectId, @Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
+    try {
+      const user: any = await this.userService.updateUser(id, updateUserDto);
+      return res.status(HttpStatus.OK).send(user);
+    } catch (error) {
+      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+    }
+  }
+
+  @Put('password')
+  async changePassword(@GetCurrentUserId() id: MongooseSchema.Types.ObjectId, @Body() changePasswordDto: ChangePasswordDto, @Res() res: Response) {
+    try {
+      const user: any = await this.userService.changePassword(id, changePasswordDto);
+      return res.status(HttpStatus.OK).send(user);
+    } catch (error) {
+      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+    }
+  }
+
+  @Get('manage/:id')
   async getUserById(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
     try {
       const user: any = await this.userService.getUserById(id);
@@ -48,7 +56,7 @@ export class UserController {
     }
   }
 
-  @Put(`${userRoute}/:id`)
+  @Put('manage/:id')
   async updateUser(@Param('id') id: MongooseSchema.Types.ObjectId, @Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
     try {
       const user: any = await this.userService.updateUser(id, updateUserDto);
@@ -58,17 +66,7 @@ export class UserController {
     }
   }
 
-  @Put(`${userRoute}/:id/password`)
-  async changePassword(@Param('id') id: MongooseSchema.Types.ObjectId, @Body() changePasswordDto: ChangePasswordDto, @Res() res: Response) {
-    try {
-      const user: any = await this.userService.changePassword(id, changePasswordDto);
-      return res.status(HttpStatus.OK).send(user);
-    } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
-    }
-  }
-
-  @Delete(`${userRoute}/:id`)
+  @Delete('manage/:id')
   async deleteUser(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
     try {
       await this.userService.deleteUser(id);
@@ -78,7 +76,7 @@ export class UserController {
     }
   }
 
-  @Get(`${userRoute}`)
+  @Get()
   async listUsers(@Res() res: Response) {
     try {
       const users: any = await this.userService.listUsers();

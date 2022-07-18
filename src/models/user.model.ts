@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { validRoles } from '../configs/app.config';
 import { Address, AddressSchema } from './address.model';
 import { CartItem, CartItemSchema } from './cartItem.model';
 
@@ -12,9 +13,12 @@ export class User extends Document {
   email: string;
 
   @Prop({ required: true })
-  password: string;
+  hashPassword: string;
 
-  @Prop({ required: true, enum: ['ADMIN', 'USER'] })
+  @Prop({ required: false })
+  hashToken: string;
+
+  @Prop({ required: true, enum: validRoles, default: validRoles[0] })
   role: string;
 
   @Prop({ required: false })
