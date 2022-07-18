@@ -1,52 +1,53 @@
-import { BE_ROUTE_PREFIX } from '../../configs/app.config';
 import { Controller, Post, Get, Put, Delete, Body, Param, Res, HttpStatus } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Connection, Schema as MongooseSchema } from 'mongoose';
+import { appConstants } from '../../configs/app.config';
 import { errorHandlingException, errorTypes } from '../../helpers/logger.helper';
 
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/createProduct.dto';
 import { UpdateProductDto } from './dto/updateProduct.dto';
+import { PublicEndpoint } from '../../common/decorators/publicEndpoint.decorator';
 
 const logLabel = 'PRODUCT-CONTROLLER';
-const productRoute = `${BE_ROUTE_PREFIX}/product`;
 
-@Controller()
+@Controller(`${appConstants.appRoutePrefix}/product`)
 export class ProductController {
   constructor(@InjectConnection() private readonly mongoConnection: Connection, private productService: ProductService) {}
 
-  @Post(`${productRoute}`)
+  @Post()
   async createProduct(@Body() createProductDto: CreateProductDto, @Res() res: Response) {
     try {
       const newProduct: any = await this.productService.createProduct(createProductDto);
-      return res.status(HttpStatus.CREATED).send(newProduct);
+      return res.status(HttpStatus.CREATED).send({ data: newProduct });
     } catch (error) {
       errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
     }
   }
 
-  @Get(`${productRoute}/:id`)
+  @PublicEndpoint()
+  @Get(':id')
   async getProductById(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
     try {
       const product: any = await this.productService.getProductById(id);
-      return res.status(HttpStatus.OK).send(product);
+      return res.status(HttpStatus.OK).send({ data: product });
     } catch (error) {
       errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
     }
   }
 
-  @Put(`${productRoute}/:id`)
+  @Put(':id')
   async updateProduct(@Param('id') id: MongooseSchema.Types.ObjectId, @Body() updateProductDto: UpdateProductDto, @Res() res: Response) {
     try {
       const product: any = await this.productService.updateProduct(id, updateProductDto);
-      return res.status(HttpStatus.OK).send(product);
+      return res.status(HttpStatus.OK).send({ data: product });
     } catch (error) {
       errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
     }
   }
 
-  @Delete(`${productRoute}/:id`)
+  @Delete(':id')
   async deleteProduct(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
     try {
       await this.productService.deleteProduct(id);
@@ -56,11 +57,12 @@ export class ProductController {
     }
   }
 
-  @Get(`${productRoute}`)
+  @PublicEndpoint()
+  @Get()
   async listProducts(@Res() res: Response) {
     try {
-      const users: any = await this.productService.listProducts();
-      return res.status(HttpStatus.OK).send(users);
+      const products: any = await this.productService.listProducts();
+      return res.status(HttpStatus.OK).send({ data: products });
     } catch (error) {
       errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
     }
