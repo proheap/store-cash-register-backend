@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { ClientSession, Model, Schema as MongooseSchema } from 'mongoose';
+import { Model, Schema as MongooseSchema } from 'mongoose';
 import { errorHandlingException, errorTypes } from '../../helpers/logger.helper';
 
 import { User } from '../../models/user.model';

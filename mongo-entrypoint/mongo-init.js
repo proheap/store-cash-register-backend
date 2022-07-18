@@ -4,4 +4,3 @@ db.createUser({
   pwd: 'secret',
   roles: [{ role: 'readWrite', db: 'customerDB' }],
 });
-db.createCollection('customer_transaction', { capped: false });
