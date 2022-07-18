@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { ClientSession, Model, Schema as MongooseSchema } from 'mongoose';
+import { Model, Schema as MongooseSchema } from 'mongoose';
 import { errorHandlingException, errorTypes } from '../../helpers/logger.helper';
 
 import { Product } from '../../models/product.model';
-import { CartItem } from 'src/models/cartItem.model';
-import { User } from 'src/models/user.model';
+import { User } from '../../models/user.model';
 import { CreateProductDto } from './dto/createProduct.dto';
 import { UpdateProductDto } from './dto/updateProduct.dto';
 
@@ -13,11 +12,7 @@ const logLabel = 'PRODUCT-SERVICE';
 
 @Injectable()
 export class ProductService {
-  constructor(
-    @InjectModel(Product.name) private readonly productModel: Model<Product>,
-    @InjectModel(User.name) private readonly userModel: Model<User>,
-    @InjectModel(CartItem.name) private readonly cartItemModel: Model<CartItem>,
-  ) {}
+  constructor(@InjectModel(Product.name) private readonly productModel: Model<Product>, @InjectModel(User.name) private readonly userModel: Model<User>) {}
 
   async createProduct(createProductDto: CreateProductDto) {
     let product = await this.productModel.findOne({ title: createProductDto.title });
@@ -28,7 +23,7 @@ export class ProductService {
       title: createProductDto.title,
       description: createProductDto.description,
       price: createProductDto.price,
-      quantity: createProductDto.price,
+      quantity: createProductDto.quantity,
     });
     try {
       product = await product.save();
@@ -83,30 +78,6 @@ export class ProductService {
       errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'Product with ID not found');
     }
     return product;
-  }
-
-  async addProductToCart(userId: MongooseSchema.Types.ObjectId, productId: MongooseSchema.Types.ObjectId, quantity: number) {
-    let product: any, user: any;
-    try {
-      user = await this.userModel.findById({ _id: userId });
-      product = await this.productModel.findById({ _id: productId });
-    } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
-    }
-    if (!user) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
-    }
-    if (!product) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'Product with ID not found');
-    }
-    const cartItem = new this.cartItemModel({
-      product: productId,
-      quantity: quantity,
-    });
-    console.log(user);
-    user.cart.push(cartItem);
-    user.save();
-    return cartItem;
   }
 
   async listProducts() {
