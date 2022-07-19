@@ -3,7 +3,7 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Connection, Schema as MongooseSchema } from 'mongoose';
 import { appConstants } from '../../configs/app.config';
-import { errorHandlingException, errorTypes } from '../../helpers/logger.helper';
+import { errorHandlingException } from '../../helpers/logger.helper';
 
 import { CartService } from './cart.service';
 import { GetCurrentUserId } from '../../common/decorators/getCurrentUserId.decorator';
@@ -25,7 +25,7 @@ export class CartController {
       const cart: any = await this.cartService.addProductToCart(userId, productId, quantity);
       return res.status(HttpStatus.CREATED).send({ data: cart });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -40,7 +40,7 @@ export class CartController {
       const cart: any = await this.cartService.updateProductFromCart(userId, productId, quantity);
       return res.status(HttpStatus.OK).send({ data: cart });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -54,7 +54,7 @@ export class CartController {
       await this.cartService.removeProductFromCart(userId, productId);
       return res.status(HttpStatus.NO_CONTENT).send();
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -64,7 +64,7 @@ export class CartController {
       const cart: any = await this.cartService.listProductsInCart(userId);
       return res.status(HttpStatus.OK).send({ data: cart });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 }

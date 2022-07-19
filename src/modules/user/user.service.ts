@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Schema as MongooseSchema } from 'mongoose';
-import { errorHandlingException, errorTypes } from '../../helpers/logger.helper';
+import { errorHandlingException } from '../../helpers/logger.helper';
 import { hashData, hashCompare } from '../../helpers/hash.helper';
 
 import { User } from '../../models/user.model';
@@ -19,10 +19,10 @@ export class UserService {
     try {
       user = await this.userModel.findById({ _id: id }).select('-hashPassword -hashToken').exec();
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!user) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+      errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
     return user;
   }
@@ -40,10 +40,10 @@ export class UserService {
       user.address.country = updateUserDto.country;
       user = await user.save();
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!user) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+      errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
     return user;
   }
@@ -53,17 +53,17 @@ export class UserService {
     try {
       user = await this.userModel.findById({ _id: id });
       if (!(await hashCompare(user.hashPassword, changePassword.oldPassword))) {
-        errorHandlingException(logLabel, null, true, errorTypes.BAD_REQUEST, 'Old password is not valid');
+        errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'Old password is not valid');
       }
       const hash = await hashData(changePassword.newPassword);
       user.hashPassword = hash;
       await user.save();
       user = await this.userModel.findById({ _id: user.id }).select('-hashPassword -hashToken').exec();
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!user) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+      errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
     return user;
   }
@@ -73,10 +73,10 @@ export class UserService {
     try {
       user = await this.userModel.findByIdAndDelete({ _id: id });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!user) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+      errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
     return user;
   }
@@ -86,7 +86,7 @@ export class UserService {
     try {
       users = await this.userModel.find({}).select('-hashPassword -hashToken').exec();
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return users;
   }
