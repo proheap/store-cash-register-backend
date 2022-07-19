@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Schema as MongooseSchema } from 'mongoose';
-import { errorHandlingException, errorTypes } from '../../helpers/logger.helper';
+import { errorHandlingException } from '../../helpers/logger.helper';
 
 import { Product } from '../../models/product.model';
 import { User } from '../../models/user.model';
@@ -17,7 +17,7 @@ export class ProductService {
   async createProduct(createProductDto: CreateProductDto) {
     let product = await this.productModel.findOne({ title: createProductDto.title });
     if (product) {
-      errorHandlingException(logLabel, null, true, errorTypes.CONFLICT, 'Product already exists');
+      errorHandlingException(logLabel, null, true, HttpStatus.CONFLICT, 'Product already exists');
     }
     product = new this.productModel({
       title: createProductDto.title,
@@ -28,10 +28,10 @@ export class ProductService {
     try {
       product = await product.save();
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!product) {
-      errorHandlingException(logLabel, null, true, errorTypes.CONFLICT, 'Product not created');
+      errorHandlingException(logLabel, null, true, HttpStatus.CONFLICT, 'Product not created');
     }
     return product;
   }
@@ -41,10 +41,10 @@ export class ProductService {
     try {
       product = await this.productModel.findById({ _id: id });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!product) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'Product with ID not found');
+      errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'Product with ID not found');
     }
     return product;
   }
@@ -59,10 +59,10 @@ export class ProductService {
       product.quantity = updateProductDto.quantity;
       product = await product.save();
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!product) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'Product with ID not found');
+      errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'Product with ID not found');
     }
     return product;
   }
@@ -72,10 +72,10 @@ export class ProductService {
     try {
       product = this.productModel.findByIdAndDelete({ _id: id });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!product) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'Product with ID not found');
+      errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'Product with ID not found');
     }
     return product;
   }
@@ -85,7 +85,7 @@ export class ProductService {
     try {
       products = await this.productModel.find();
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return products;
   }

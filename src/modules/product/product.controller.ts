@@ -3,7 +3,7 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Connection, Schema as MongooseSchema } from 'mongoose';
 import { appConstants } from '../../configs/app.config';
-import { errorHandlingException, errorTypes } from '../../helpers/logger.helper';
+import { errorHandlingException } from '../../helpers/logger.helper';
 
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/createProduct.dto';
@@ -22,7 +22,7 @@ export class ProductController {
       const newProduct: any = await this.productService.createProduct(createProductDto);
       return res.status(HttpStatus.CREATED).send({ data: newProduct });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -33,7 +33,7 @@ export class ProductController {
       const product: any = await this.productService.getProductById(id);
       return res.status(HttpStatus.OK).send({ data: product });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -43,7 +43,7 @@ export class ProductController {
       const product: any = await this.productService.updateProduct(id, updateProductDto);
       return res.status(HttpStatus.OK).send({ data: product });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -53,7 +53,7 @@ export class ProductController {
       await this.productService.deleteProduct(id);
       return res.status(HttpStatus.NO_CONTENT).send();
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -64,7 +64,7 @@ export class ProductController {
       const products: any = await this.productService.listProducts();
       return res.status(HttpStatus.OK).send({ data: products });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 }

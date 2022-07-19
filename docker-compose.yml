@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.8"
 services:    
     scr-be:
         container_name: api-scr
@@ -18,7 +18,7 @@ services:
             - ./.env
         volumes:
             - ./:/urs/src/app
-            - /urs/src/app/node_modules
+            - node-modules-volume:/urs/src/app/node_modules
     mongodb:
         container_name: database-scr
         image: mongo:4.4.10
@@ -34,6 +34,8 @@ services:
             MONGO_INITDB_ROOT_PASSWORD: ${INIT_DB_PASSWORD}
         volumes:
             - ./mongo-entrypoint/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+volumes:
+    node-modules-volume:
 networks:
     scr-network:
         driver: bridge

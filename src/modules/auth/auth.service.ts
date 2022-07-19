@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { Model, Schema as MongooseSchema } from 'mongoose';
 import { appConstants } from '../../configs/app.config';
-import { errorHandlingException, errorTypes } from '../../helpers/logger.helper';
+import { errorHandlingException } from '../../helpers/logger.helper';
 import { hashData, hashCompare } from '../../helpers/hash.helper';
 
 import { User } from '../../models/user.model';
@@ -20,7 +20,7 @@ export class AuthService {
   async registerUser(registerDto: RegisterDto) {
     let newUser = await this.getUserByEmail(registerDto.email);
     if (newUser) {
-      errorHandlingException(logLabel, null, true, errorTypes.CONFLICT, 'User already exists');
+      errorHandlingException(logLabel, null, true, HttpStatus.CONFLICT, 'User already exists');
     }
     const hash = await hashData(registerDto.password);
     newUser = new this.userModel({
@@ -40,30 +40,30 @@ export class AuthService {
       await this.updateRefreshToken(newUser._id, tokens.refreshToken);
       newUser = await this.userModel.findOne({ _id: newUser._id }).select('-hashPassword -hashToken').exec();
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!newUser) {
-      errorHandlingException(logLabel, null, true, errorTypes.CONFLICT, 'User not created');
+      errorHandlingException(logLabel, null, true, HttpStatus.CONFLICT, 'User not created');
     }
     return newUser;
   }
 
   async loginUser(loginDto: LoginDto) {
     let user: any, tokens: any;
+    user = await this.userModel.findOne({ username: loginDto.username });
+    if (!user) {
+      errorHandlingException(logLabel, null, true, HttpStatus.FORBIDDEN, 'Access Denied');
+    }
+    const passwordMatches = await hashCompare(loginDto.password, user.hashPassword);
+    if (!passwordMatches) {
+      errorHandlingException(logLabel, null, true, HttpStatus.FORBIDDEN, 'Access Denied');
+    }
     try {
-      user = await this.userModel.findOne({ username: loginDto.username });
-      if (!user) {
-        errorHandlingException(logLabel, null, true, errorTypes.FORBIDDEN, 'Access Denied');
-      }
-      const passwordMatches = await hashCompare(loginDto.password, user.hashPassword);
-      if (!passwordMatches) {
-        errorHandlingException(logLabel, null, true, errorTypes.FORBIDDEN, 'Access Denied');
-      }
       tokens = await this.getTokens(user._id, user.email);
       await this.updateRefreshToken(user._id, tokens.refreshToken);
       user = await this.userModel.findById({ _id: user.id }).select('-hashPassword -hashToken').exec();
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return { user: user, accessToken: tokens.accessToken };
   }
@@ -72,7 +72,7 @@ export class AuthService {
     try {
       await this.userModel.updateMany({ _id: userId, hashToken: { $ne: null } }, { hashToken: null });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -104,7 +104,7 @@ export class AuthService {
     try {
       user.save();
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return user;
   }
@@ -114,7 +114,7 @@ export class AuthService {
     try {
       user = await this.userModel.findOne({ email: email });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return user;
   }
@@ -124,7 +124,7 @@ export class AuthService {
     try {
       user = await this.userModel.findOne({ username: username });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return user;
   }

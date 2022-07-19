@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Schema as MongooseSchema } from 'mongoose';
-import { errorHandlingException, errorTypes } from '../../helpers/logger.helper';
+import { errorHandlingException } from '../../helpers/logger.helper';
 
 import { Product } from '../../models/product.model';
 import { CartItem } from '../../models/cartItem.model';
@@ -23,13 +23,13 @@ export class CartService {
       user = await this.userModel.findById({ _id: userId });
       product = await this.productModel.findById({ _id: productId });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!user) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+      errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
     if (!product) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'Product with ID not found');
+      errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'Product with ID not found');
     }
     const cartItem = new this.cartItemModel({
       product: productId,
@@ -47,13 +47,13 @@ export class CartService {
       user = await this.userModel.findById({ _id: userId });
       cartItem = await this.cartItemModel.updateOne({ product: productId }, { quantity: quantity });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!user) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+      errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
     if (!cartItem) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'Cart item not found');
+      errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'Cart item not found');
     }
     return cartItem;
   }
@@ -64,13 +64,13 @@ export class CartService {
       user = await this.userModel.findById({ _id: userId });
       cartItem = await this.cartItemModel.deleteOne({ product: productId });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!user) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+      errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
     if (!cartItem) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'Cart item not found');
+      errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'Cart item not found');
     }
     user.cart = user.cart.filter((cartItem: any) => {
       return cartItem.product != productId;
@@ -84,10 +84,10 @@ export class CartService {
     try {
       user = await this.userModel.findById({ _id: userId });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.INTERNAL_SERVER);
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!user) {
-      errorHandlingException(logLabel, null, true, errorTypes.NOT_FOUND, 'User with ID not found');
+      errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
     return user.cart;
   }

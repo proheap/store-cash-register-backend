@@ -1,10 +1,9 @@
-import { Controller, Post, Body, Res, HttpStatus, UseGuards, Req } from '@nestjs/common';
+import { Controller, Post, Body, Res, HttpStatus } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
-import { AuthGuard } from '@nestjs/passport';
-import { Response, Request } from 'express';
+import { Response } from 'express';
 import { Connection, Schema as MongooseSchema } from 'mongoose';
 import { appConstants } from '../../configs/app.config';
-import { errorHandlingException, errorTypes } from '../../helpers/logger.helper';
+import { errorHandlingException } from '../../helpers/logger.helper';
 
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -25,7 +24,7 @@ export class AuthController {
       const newUser: any = await this.authService.registerUser(registerDto);
       return res.status(HttpStatus.CREATED).send({ data: newUser });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -36,7 +35,8 @@ export class AuthController {
       const user: any = await this.authService.loginUser(loginDto);
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      console.log(error);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -46,7 +46,7 @@ export class AuthController {
       await this.authService.logoutUser(userId);
       return res.status(HttpStatus.OK).send();
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 }

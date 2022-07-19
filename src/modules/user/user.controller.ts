@@ -3,7 +3,7 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Connection, Schema as MongooseSchema } from 'mongoose';
 import { appConstants } from '../../configs/app.config';
-import { errorHandlingException, errorTypes } from '../../helpers/logger.helper';
+import { errorHandlingException } from '../../helpers/logger.helper';
 
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/updateUser.dto';
@@ -22,7 +22,7 @@ export class UserController {
       const user: any = await this.userService.getUserById(id);
       return res.status(HttpStatus.OK).send(user);
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -32,7 +32,7 @@ export class UserController {
       const user: any = await this.userService.updateUser(id, updateUserDto);
       return res.status(HttpStatus.OK).send(user);
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -42,7 +42,7 @@ export class UserController {
       const user: any = await this.userService.changePassword(id, changePasswordDto);
       return res.status(HttpStatus.OK).send(user);
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -52,7 +52,7 @@ export class UserController {
       const user: any = await this.userService.getUserById(id);
       return res.status(HttpStatus.OK).send(user);
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -62,7 +62,7 @@ export class UserController {
       const user: any = await this.userService.updateUser(id, updateUserDto);
       return res.status(HttpStatus.OK).send(user);
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -72,7 +72,7 @@ export class UserController {
       await this.userService.deleteUser(id);
       return res.status(HttpStatus.NO_CONTENT).send();
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 
@@ -82,7 +82,7 @@ export class UserController {
       const users: any = await this.userService.listUsers();
       return res.status(HttpStatus.OK).send(users);
     } catch (error) {
-      errorHandlingException(logLabel, error, true, errorTypes.BAD_REQUEST);
+      errorHandlingException(logLabel, error, true, error.status);
     }
   }
 }
