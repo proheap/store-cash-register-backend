@@ -52,19 +52,20 @@ export class UserService {
     let user: any;
     try {
       user = await this.userModel.findById(id);
-      if (!(await hashCompare(user.hashPassword, changePasswordDto.oldPassword))) {
-        errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'Old password is not valid');
-      }
-      const hash = await hashData(changePasswordDto.newPassword);
-      user.hashPassword = hash;
-      await user.save();
-      user = await this.userModel.findById(user.id).select('-hashPassword -hashToken').exec();
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!user) {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
+    const passwordMatches = await hashCompare(changePasswordDto.oldPassword, user.hashPassword);
+    if (!passwordMatches) {
+      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'Old password is not valid');
+    }
+    const hash = await hashData(changePasswordDto.newPassword);
+    user.hashPassword = hash;
+    await user.save();
+    user = await this.userModel.findById(user.id).select('-hashPassword -hashToken').exec();
     return user;
   }
 
