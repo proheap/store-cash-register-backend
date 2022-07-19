@@ -4,12 +4,12 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 import { Product } from './product.model';
 
 @Schema({ timestamps: true })
-export class CartItem extends Document {
-  @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: Product.name })
+export class OrderItem extends Document {
+  @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: Product.name })
   product: MongooseSchema.Types.ObjectId;
 
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   quantity: number;
 }
 
-export const CartItemSchema = SchemaFactory.createForClass(CartItem);
+export const OrderItemSchema = SchemaFactory.createForClass(OrderItem);

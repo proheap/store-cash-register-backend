@@ -1,4 +1,12 @@
-import { HttpStatus, ConflictException, InternalServerErrorException, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  HttpStatus,
+  ConflictException,
+  InternalServerErrorException,
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 
 function throwError(logLabel: string, throwErrorType: HttpStatus, messageText: string) {
   switch (throwErrorType) {
@@ -12,6 +20,8 @@ function throwError(logLabel: string, throwErrorType: HttpStatus, messageText: s
       throw new NotFoundException(`[${logLabel}] ${messageText}`);
     case HttpStatus.FORBIDDEN:
       throw new ForbiddenException(`[${logLabel}] ${messageText}`);
+    case HttpStatus.UNPROCESSABLE_ENTITY:
+      throw new UnprocessableEntityException(`[${logLabel}] ${messageText}`);
     default:
       throw new Error(`[${logLabel}] ${messageText}`);
   }

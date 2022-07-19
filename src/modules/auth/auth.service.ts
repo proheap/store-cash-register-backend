@@ -7,6 +7,7 @@ import { errorHandlingException } from '../../helpers/logger.helper';
 import { hashData, hashCompare } from '../../helpers/hash.helper';
 
 import { User } from '../../models/user.model';
+import { Order } from '../../models/order.model';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './types/jwtPayload.type';
@@ -15,7 +16,11 @@ const logLabel = 'AUTH-SERVICE';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel(User.name) private readonly userModel: Model<User>, private jwtService: JwtService) {}
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(Order.name) private readonly orderModel: Model<Order>,
+    private jwtService: JwtService,
+  ) {}
 
   async registerUser(registerDto: RegisterDto) {
     let newUser = await this.getUserByEmail(registerDto.email);
@@ -23,6 +28,8 @@ export class AuthService {
       errorHandlingException(logLabel, null, true, HttpStatus.CONFLICT, 'User already exists');
     }
     const hash = await hashData(registerDto.password);
+    const cart = new this.orderModel();
+    cart.save();
     newUser = new this.userModel({
       username: registerDto.username,
       email: registerDto.email,
@@ -33,6 +40,7 @@ export class AuthService {
       'address.apartment': registerDto.apartment,
       'address.postalCode': registerDto.postalCode,
       'address.country': registerDto.country,
+      cart: cart._id,
     });
     try {
       newUser = await newUser.save();
@@ -40,9 +48,11 @@ export class AuthService {
       await this.updateRefreshToken(newUser._id, tokens.refreshToken);
       newUser = await this.userModel.findOne({ _id: newUser._id }).select('-hashPassword -hashToken').exec();
     } catch (error) {
+      await this.orderModel.findByIdAndDelete(cart._id);
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!newUser) {
+      await this.orderModel.findByIdAndDelete(cart._id);
       errorHandlingException(logLabel, null, true, HttpStatus.CONFLICT, 'User not created');
     }
     return newUser;
@@ -61,7 +71,7 @@ export class AuthService {
     try {
       tokens = await this.getTokens(user._id, user.email);
       await this.updateRefreshToken(user._id, tokens.refreshToken);
-      user = await this.userModel.findById({ _id: user.id }).select('-hashPassword -hashToken').exec();
+      user = await this.userModel.findById(user.id).select('-hashPassword -hashToken').exec();
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }

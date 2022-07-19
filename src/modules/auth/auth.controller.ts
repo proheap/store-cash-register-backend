@@ -35,7 +35,6 @@ export class AuthController {
       const user: any = await this.authService.loginUser(loginDto);
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
-      console.log(error);
       errorHandlingException(logLabel, error, true, error.status);
     }
   }
