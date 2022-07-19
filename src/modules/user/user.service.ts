@@ -17,7 +17,7 @@ export class UserService {
   async getUserById(id: MongooseSchema.Types.ObjectId) {
     let user: any;
     try {
-      user = await this.userModel.findById({ _id: id }).select('-hashPassword -hashToken').exec();
+      user = await this.userModel.findById(id).select('-hashPassword -hashToken').exec();
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -30,7 +30,7 @@ export class UserService {
   async updateUser(id: MongooseSchema.Types.ObjectId, updateUserDto: UpdateUserDto) {
     let user: any;
     try {
-      user = await this.userModel.findById({ _id: id }).select('-hashPassword -hashToken').exec();
+      user = await this.userModel.findById(id).select('-hashPassword -hashToken').exec();
       user.firstName = updateUserDto.firstName;
       user.lastName = updateUserDto.lastName;
       user.address.city = updateUserDto.city;
@@ -48,17 +48,17 @@ export class UserService {
     return user;
   }
 
-  async changePassword(id: MongooseSchema.Types.ObjectId, changePassword: ChangePasswordDto) {
+  async changePassword(id: MongooseSchema.Types.ObjectId, changePasswordDto: ChangePasswordDto) {
     let user: any;
     try {
-      user = await this.userModel.findById({ _id: id });
-      if (!(await hashCompare(user.hashPassword, changePassword.oldPassword))) {
+      user = await this.userModel.findById(id);
+      if (!(await hashCompare(user.hashPassword, changePasswordDto.oldPassword))) {
         errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'Old password is not valid');
       }
-      const hash = await hashData(changePassword.newPassword);
+      const hash = await hashData(changePasswordDto.newPassword);
       user.hashPassword = hash;
       await user.save();
-      user = await this.userModel.findById({ _id: user.id }).select('-hashPassword -hashToken').exec();
+      user = await this.userModel.findById(user.id).select('-hashPassword -hashToken').exec();
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -71,7 +71,7 @@ export class UserService {
   async deleteUser(id: MongooseSchema.Types.ObjectId) {
     let user: any;
     try {
-      user = await this.userModel.findByIdAndDelete({ _id: id });
+      user = await this.userModel.findByIdAndDelete(id);
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -84,7 +84,7 @@ export class UserService {
   async listUsers() {
     let users = [];
     try {
-      users = await this.userModel.find({}).select('-hashPassword -hashToken').exec();
+      users = await this.userModel.find().select('-hashPassword -hashToken').exec();
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }

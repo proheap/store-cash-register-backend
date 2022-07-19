@@ -1,8 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 import { validRoles } from '../configs/app.config';
 import { Address, AddressSchema } from './address.model';
-import { CartItem, CartItemSchema } from './cartItem.model';
 
 @Schema({ timestamps: true })
 export class User extends Document {
@@ -33,8 +32,11 @@ export class User extends Document {
   @Prop({ type: AddressSchema, required: false })
   address: Address;
 
-  @Prop({ type: [{ type: CartItemSchema, required: false }], default: [] })
-  cart: CartItem;
+  @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
+  cart: MongooseSchema.Types.ObjectId;
+
+  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, required: false }], default: [] })
+  orders: [MongooseSchema.Types.ObjectId];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
