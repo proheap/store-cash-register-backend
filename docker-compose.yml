@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.8"
 services:    
     scr-be:
         container_name: api-scr
@@ -18,10 +18,10 @@ services:
             - ./.env
         volumes:
             - ./:/urs/src/app
-            - /urs/src/app/node_modules
+            - node-modules-volume:/urs/src/app/node_modules
     mongodb:
         container_name: database-scr
-        image: mongo:4.4.10
+        image: mongo:latest
         ports:
             - ${DB_PORT}:27017
         networks:
@@ -29,20 +29,26 @@ services:
         restart: always
         env_file:
             - ./.env
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: ${INIT_DB_USER}
-            MONGO_INITDB_ROOT_PASSWORD: ${INIT_DB_PASSWORD}
         volumes:
             - ./mongo-entrypoint/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-            - ./mongo-entrypoint/replica.key:/data/replica.key
+        entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+    mongo-init:
+        container_name: database-init-scr
+        image: mongo:latest
+        networks:
+            - scr-network
+        depends_on:
+            - mongodb
+        volumes:
+            - ./mongo-entrypoint/initiate-replica.sh:/deployment-scripts/initiate-replica.sh
         entrypoint:
             - bash
             - -c
             - |
-                chmod 400 /data/replica.key
-                chown 999:999 /data/replica.key
-                exec docker-entrypoint.sh $$@     
-        command: mongod --replSet rs --bind_ip_all --keyFile /data/replica.key
+                chmod +x /deployment-scripts/initiate-replica.sh
+                exec /deployment-scripts/initiate-replica.sh ${DB_HOST} ${DB_PORT} ${DB_NAME} ${DB_USER} ${DB_PASSWORD}
+volumes:
+    node-modules-volume:
 networks:
     scr-network:
         driver: bridge

@@ -1,2 +1,5 @@
-const { DB_PORT, DB_HOST, DB_NAME, DB_USER, DB_PASSWORD } = process.env;
-export const connectionString = `mongodb://${DB_HOST}:${DB_PORT}/&replicaSet=rs`;
+const { DB_PORT, DB_HOST, DB_USER, DB_PASSWORD } = process.env;
+export const connectionString =
+  DB_USER && DB_PASSWORD
+    ? `mongodb://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/?replicaSet=rs0&ssl=false`
+    : `mongodb://${DB_HOST}:${DB_PORT}/?replicaSet=rs0&ssl=false`;
