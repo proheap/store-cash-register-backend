@@ -30,23 +30,13 @@ services:
         env_file:
             - ./.env
         volumes:
-            - ./mongo-entrypoint/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-        entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
-    mongo-init:
-        container_name: database-init-scr
-        image: mongo:latest
-        networks:
-            - scr-network
-        depends_on:
-            - mongodb
-        volumes:
-            - ./mongo-entrypoint/initiate-replica.sh:/deployment-scripts/initiate-replica.sh
+            - ./mongo-entrypoint:/docker-entrypoint-initdb.d
         entrypoint:
             - bash
             - -c
             - |
-                chmod +x /deployment-scripts/initiate-replica.sh
-                exec /deployment-scripts/initiate-replica.sh ${DB_HOST} ${DB_PORT} ${DB_NAME} ${DB_USER} ${DB_PASSWORD}
+                chmod +x /docker-entrypoint-initdb.d/initiate-replica.sh
+                exec /docker-entrypoint-initdb.d/initiate-replica.sh ${DB_HOST} ${DB_PORT} ${DB_NAME} ${DB_USER} ${DB_PASSWORD}
 volumes:
     node-modules-volume:
 networks:
