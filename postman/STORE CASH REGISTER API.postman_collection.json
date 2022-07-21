@@ -1,0 +1,1539 @@
+{
+	"info": {
+		"_postman_id": "77cd33b1-e6b2-46b4-bd72-90ebad8f77bb",
+		"name": "STORE CASH REGISTER API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13816551"
+	},
+	"item": [
+		{
+			"name": "AUTH",
+			"item": [
+				{
+					"name": "Registration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"REGISTRATION TEST - CREATED\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\"username\": \"JasonStat\",\r\n    \"email\": \"jason.statham@test.com\",\r\n    \"password\": \"js123\",\r\n\t\"firstName\": \"Jason\",\r\n\t\"lastName\": \"Statham\",\r\n    \"city\": \"NY\",\r\n    \"street\": \"Park st.\",\r\n    \"apartment\": \"3501\",\r\n    \"postalCode\": \"75023\",\r\n    \"country\": \"USA\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/auth/register",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "bla bla"
+					},
+					"response": [
+						{
+							"name": "Registration - JasonStat",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n\t\"username\": \"JasonStat\",\n    \"email\": \"jason.statham@test.com\",\n    \"password\": \"js123\",\n\t\"firstName\": \"Jason\",\n\t\"lastName\": \"Statham\",\n    \"city\": \"NY\",\n    \"street\": \"Park st.\",\n    \"apartment\": \"3501\",\n    \"postalCode\": \"75023\",\n    \"country\": \"USA\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{SCR HOST}}:{{SCR PORT}}/api/auth/register",
+									"host": [
+										"{{SCR HOST}}"
+									],
+									"port": "{{SCR PORT}}",
+									"path": [
+										"api",
+										"auth",
+										"register"
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						},
+						{
+							"name": "Registration - JohnDean",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"JohnDean\",\n    \"email\": \"john.dean@test.com\",\n    \"password\": \"secret\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Dean\",\n    \"city\": \"Chicago\",\n    \"street\": \"Winter st.\",\n    \"apartment\": \"2514\",\n    \"postalCode\": \"32153\",\n    \"country\": \"Canada\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{SCR HOST}}:{{SCR PORT}}/api/auth/register",
+									"host": [
+										"{{SCR HOST}}"
+									],
+									"port": "{{SCR PORT}}",
+									"path": [
+										"api",
+										"auth",
+										"register"
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"var token = jsonData.data.accessToken;\r",
+									"pm.collectionVariables.set(\"ACCESS TOKEN\", token);\r",
+									"var id = jsonData.data.user._id;\r",
+									"pm.collectionVariables.set(\"USER ID\", id);\r",
+									"\r",
+									"pm.test(\"LOGIN TEST - OK\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"JasonStat\",\n    \"password\": \"js123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/auth/login",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Login - JasonStat",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"JasonStat\",\n    \"password\": \"js123\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{SCR HOST}}:{{SCR PORT}}/api/auth/login",
+									"host": [
+										"{{SCR HOST}}"
+									],
+									"port": "{{SCR PORT}}",
+									"path": [
+										"api",
+										"auth",
+										"login"
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						},
+						{
+							"name": "Login - JohnDean",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"JohnDean\",\n    \"password\": \"secret\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{SCR HOST}}:{{SCR PORT}}/api/auth/login",
+									"host": [
+										"{{SCR HOST}}"
+									],
+									"port": "{{SCR PORT}}",
+									"path": [
+										"api",
+										"auth",
+										"login"
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"LOGOUT TEST - OK\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/auth/logout",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "USER",
+			"item": [
+				{
+					"name": "Change password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"CHANGE PASSWORD TEST - OK\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"oldPassword\": \"js123\",\n    \"newPassword\": \"strong\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/user/password",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"user",
+								"password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update logged user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"UPDATE LOGGED USER TEST - OK\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Dean\",\n    \"city\": \"Chicago\",\n    \"street\": \"Winter st.\",\n    \"apartment\": \"2514\",\n    \"postalCode\": \"32153\",\n    \"country\": \"Canada\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/user",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update user by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"UPDATE USER BY ID TEST - OK\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Dean\",\n    \"city\": \"Chicago\",\n    \"street\": \"Winter st.\",\n    \"apartment\": \"2514\",\n    \"postalCode\": \"32153\",\n    \"country\": \"Canada\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/user/manage/:id",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"user",
+								"manage",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{USER ID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get user by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET USER BY ID TEST - OK\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/user/manage/:id",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"user",
+								"manage",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{USER ID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get logged user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET LOGGED USER - OK\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/user",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"LIST USERS - OK\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/user",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete user by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DELETE USER BY ID TEST - NO CONTENT\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/user/manage/:id",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"user",
+								"manage",
+								":id"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{USER ID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{ACCESS TOKEN}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "PRODUCT",
+			"item": [
+				{
+					"name": "Create product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"var id = jsonData.data._id;\r",
+									"pm.collectionVariables.set(\"PRODUCT ID\", id);\r",
+									"\r",
+									"pm.test(\"CREATE PRODUCT TO CART TEST - CREATED\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Banana\",\n    \"description\": \"Fruit\",\n    \"price\": 1.99,\n    \"quantity\": 50\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/product",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"product"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Create product - Apple",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Apple\",\n    \"description\": \"Fruit\",\n    \"price\": 0.99,\n    \"quantity\": 10\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{SCR HOST}}:{{SCR PORT}}/api/product",
+									"host": [
+										"{{SCR HOST}}"
+									],
+									"port": "{{SCR PORT}}",
+									"path": [
+										"api",
+										"product"
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						},
+						{
+							"name": "Create product - Banana",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Banana\",\n    \"description\": \"Fruit\",\n    \"price\": 1.99,\n    \"quantity\": 50\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{SCR HOST}}:{{SCR PORT}}/api/product",
+									"host": [
+										"{{SCR HOST}}"
+									],
+									"port": "{{SCR PORT}}",
+									"path": [
+										"api",
+										"product"
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						},
+						{
+							"name": "Create product - Strawberry",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Strawberry\",\n    \"description\": \"Fruit\",\n    \"price\": 2.5,\n    \"quantity\": 5\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{SCR HOST}}:{{SCR PORT}}/api/product",
+									"host": [
+										"{{SCR HOST}}"
+									],
+									"port": "{{SCR PORT}}",
+									"path": [
+										"api",
+										"product"
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						},
+						{
+							"name": "Create product - Pea",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"Pea\",\n    \"description\": \"Vegetable\",\n    \"price\": 0.5,\n    \"quantity\": 100\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{SCR HOST}}:{{SCR PORT}}/api/product",
+									"host": [
+										"{{SCR HOST}}"
+									],
+									"port": "{{SCR PORT}}",
+									"path": [
+										"api",
+										"product"
+									]
+								}
+							},
+							"_postman_previewlanguage": null,
+							"header": null,
+							"cookie": [],
+							"body": null
+						}
+					]
+				},
+				{
+					"name": "Update product by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"UPDATE PRODUCT BY ID TEST - OK\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Pear\",\n    \"description\": \"Fruit\",\n    \"price\": 1.0,\n    \"quantity\": 10\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/product/:id",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"product",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{PRODUCT ID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get product by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"GET PRODUCT BY ID TEST - OK\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/product/:id",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"product",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{PRODUCT ID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"LIST PRODUCTS TEST - OK\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/product",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete product by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"DELETE PRODUCT BY ID TEST - NO CONTENT\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/product/:id",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"product",
+								":id"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{PRODUCT ID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{ACCESS TOKEN}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "CART",
+			"item": [
+				{
+					"name": "Add product to cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"var orderItems = jsonData.data.orderItems;\r",
+									"var id = orderItems[orderItems.length - 1]._id;\r",
+									"pm.test(\"ADD PRODUCT TO CART TEST - CREATED\", function () {\r",
+									"    pm.collectionVariables.set(\"CART ITEM ID\", id);\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"quantity\": 20\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/cart/product/:id",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"cart",
+								"product",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{PRODUCT ID}}",
+									"description": "  "
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update product in cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"UPDATE PRODUCT IN CART TEST - OK\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"quantity\": 10\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/cart/item/:id",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"cart",
+								"item",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{CART ITEM ID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List products in cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"LIST PRODUCTS IN CART TEST - OK\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/cart",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove product from cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"REMOVE PRODUCT FROM CART TEST - NO CONTENT\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/cart/item/:id",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"cart",
+								"item",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{CART ITEM ID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Pay order from cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"PAY ORDER FROM CART TEST - OK\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ACCESS TOKEN}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{Login Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"money\": 200\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{SCR HOST}}:{{SCR PORT}}/api/cart/payment",
+							"host": [
+								"{{SCR HOST}}"
+							],
+							"port": "{{SCR PORT}}",
+							"path": [
+								"api",
+								"cart",
+								"payment"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{ACCESS TOKEN}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "SCR HOST",
+			"value": "localhost",
+			"type": "string"
+		},
+		{
+			"key": "SCR PORT",
+			"value": "3000",
+			"type": "string"
+		},
+		{
+			"key": "USER ID",
+			"value": ""
+		},
+		{
+			"key": "PRODUCT ID",
+			"value": ""
+		},
+		{
+			"key": "ACCESS TOKEN",
+			"value": ""
+		},
+		{
+			"key": "CART ITEM ID",
+			"value": ""
+		}
+	]
+}

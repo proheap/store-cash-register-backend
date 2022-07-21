@@ -15,16 +15,6 @@ rs.initiate(
     ]
   }
 )
-use $DB_NAME
-db.createCollection('log')
-db.createUser({
-  user: '$DB_USER',
-  pwd: '$DB_PASSWORD',
-  roles: [{
-    role: 'readWrite',
-    db: '$DB_NAME'
-  }]
-})
 EOF
 echo 'CREATING NEW DATABASE WITH USER'
 mongosh <<EOF
