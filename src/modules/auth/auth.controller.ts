@@ -20,32 +20,50 @@ export class AuthController {
   @PublicEndpoint()
   @Post('register')
   async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
     try {
-      const newUser: any = await this.authService.registerUser(registerDto);
+      const newUser: any = await this.authService.registerUser(registerDto, session);
+      await session.commitTransaction();
       return res.status(HttpStatus.CREATED).send({ data: newUser });
     } catch (error) {
+      await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
+    } finally {
+      session.endSession();
     }
   }
 
   @PublicEndpoint()
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
     try {
-      const user: any = await this.authService.loginUser(loginDto);
+      const user: any = await this.authService.loginUser(loginDto, session);
+      await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
+      await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
+    } finally {
+      session.endSession();
     }
   }
 
   @Post('logout')
   async logout(@GetCurrentUserId() userId: MongooseSchema.Types.ObjectId, @Res() res: Response) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
     try {
-      await this.authService.logoutUser(userId);
-      return res.status(HttpStatus.OK).send();
+      await this.authService.logoutUser(userId, session);
+      await session.commitTransaction();
+      return res.status(HttpStatus.OK).send({});
     } catch (error) {
+      await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
+    } finally {
+      session.endSession();
     }
   }
 }
