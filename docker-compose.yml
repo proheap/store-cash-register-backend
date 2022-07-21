@@ -21,7 +21,7 @@ services:
             - node-modules-volume:/urs/src/app/node_modules
     mongodb:
         container_name: database-scr
-        image: mongo:4.4.10
+        image: mongo:latest
         ports:
             - ${DB_PORT}:27017
         networks:
@@ -29,11 +29,14 @@ services:
         restart: always
         env_file:
             - ./.env
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: ${INIT_DB_USER}
-            MONGO_INITDB_ROOT_PASSWORD: ${INIT_DB_PASSWORD}
         volumes:
-            - ./mongo-entrypoint/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+            - ./mongo-entrypoint:/docker-entrypoint-initdb.d
+        entrypoint:
+            - bash
+            - -c
+            - |
+                chmod +x /docker-entrypoint-initdb.d/mongo-init.sh
+                exec /docker-entrypoint-initdb.d/mongo-init.sh
 volumes:
     node-modules-volume:
 networks:
