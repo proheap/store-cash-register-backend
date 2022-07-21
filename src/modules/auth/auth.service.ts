@@ -1,7 +1,7 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
-import { Model, Schema as MongooseSchema } from 'mongoose';
+import { ClientSession, Model, Schema as MongooseSchema } from 'mongoose';
 import { appConstants } from '../../configs/app.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 import { hashData, hashCompare } from '../../helpers/hash.helper';
@@ -22,14 +22,14 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async registerUser(registerDto: RegisterDto) {
+  async registerUser(registerDto: RegisterDto, session: ClientSession) {
     let newUser = await this.getUserByEmail(registerDto.email);
     if (newUser) {
       errorHandlingException(logLabel, null, true, HttpStatus.CONFLICT, 'User already exists');
     }
     const hash = await hashData(registerDto.password);
     const cart = new this.orderModel();
-    cart.save();
+    cart.save({ session });
     newUser = new this.userModel({
       username: registerDto.username,
       email: registerDto.email,
@@ -43,9 +43,9 @@ export class AuthService {
       cart: cart._id,
     });
     try {
-      newUser = await newUser.save();
+      newUser = await newUser.save({ session });
       const tokens = await this.getTokens(newUser._id, newUser.email);
-      await this.updateRefreshToken(newUser._id, tokens.refreshToken);
+      await this.updateRefreshToken(newUser._id, tokens.refreshToken, session);
       newUser = await this.userModel.findOne({ _id: newUser._id }).select('-hashPassword -hashToken').exec();
     } catch (error) {
       await this.orderModel.findByIdAndDelete(cart._id);
@@ -58,7 +58,7 @@ export class AuthService {
     return newUser;
   }
 
-  async loginUser(loginDto: LoginDto) {
+  async loginUser(loginDto: LoginDto, session: ClientSession) {
     let user: any, tokens: any;
     user = await this.userModel.findOne({ username: loginDto.username });
     if (!user) {
@@ -70,7 +70,7 @@ export class AuthService {
     }
     try {
       tokens = await this.getTokens(user._id, user.email);
-      await this.updateRefreshToken(user._id, tokens.refreshToken);
+      await this.updateRefreshToken(user._id, tokens.refreshToken, session);
       user = await this.userModel.findById(user.id).select('-hashPassword -hashToken').exec();
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -78,9 +78,9 @@ export class AuthService {
     return { user: user, accessToken: tokens.accessToken };
   }
 
-  async logoutUser(userId: MongooseSchema.Types.ObjectId) {
+  async logoutUser(userId: MongooseSchema.Types.ObjectId, session: ClientSession) {
     try {
-      await this.userModel.updateMany({ _id: userId, hashToken: { $ne: null } }, { hashToken: null });
+      await this.userModel.updateMany({ _id: userId, hashToken: { $ne: null } }, { hashToken: null }).session(session);
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -107,12 +107,12 @@ export class AuthService {
     };
   }
 
-  async updateRefreshToken(userId: MongooseSchema.Types.ObjectId, refreshToken: string) {
+  async updateRefreshToken(userId: MongooseSchema.Types.ObjectId, refreshToken: string, session: ClientSession) {
     const hash = await hashData(refreshToken);
     const user = await this.userModel.findById(userId);
     user.hashToken = hash;
     try {
-      user.save();
+      user.save({ session });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }

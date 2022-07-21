@@ -1,6 +1,6 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Schema as MongooseSchema } from 'mongoose';
+import { ClientSession, Model, Schema as MongooseSchema } from 'mongoose';
 import { errorHandlingException } from '../../helpers/logger.helper';
 
 import { Product } from '../../models/product.model';
@@ -17,7 +17,7 @@ export class CartService {
     @InjectModel(Order.name) private readonly orderModel: Model<Order>,
   ) {}
 
-  async addProductToCart(userId: MongooseSchema.Types.ObjectId, productId: MongooseSchema.Types.ObjectId, quantity: number) {
+  async addProductToCart(userId: MongooseSchema.Types.ObjectId, productId: MongooseSchema.Types.ObjectId, quantity: number, session: ClientSession) {
     let user: any, product: any, cart: any;
     try {
       user = await this.userModel.findById(userId);
@@ -44,14 +44,14 @@ export class CartService {
         cart.orderItems.push(cartItem);
       }
       cart.totalPrice += Math.round(quantity * product.price * 100) / 100;
-      await cart.save();
+      await cart.save({ session });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return cart;
   }
 
-  async updateProductFromCart(userId: MongooseSchema.Types.ObjectId, cartItemId: MongooseSchema.Types.ObjectId, quantity: number) {
+  async updateProductFromCart(userId: MongooseSchema.Types.ObjectId, cartItemId: MongooseSchema.Types.ObjectId, quantity: number, session: ClientSession) {
     let user: any, cartItem: any, product: any, cart: any;
     try {
       user = await this.userModel.findById(userId);
@@ -74,11 +74,11 @@ export class CartService {
     cart.totalPrice -= Math.round(cartItem.quantity * product.price * 100) / 100;
     cartItem.quantity = quantity;
     cart.totalPrice += Math.round(cartItem.quantity * product.price * 100) / 100;
-    await cart.save();
+    await cart.save({ session });
     return cart;
   }
 
-  async removeProductFromCart(userId: MongooseSchema.Types.ObjectId, cartItemId: MongooseSchema.Types.ObjectId) {
+  async removeProductFromCart(userId: MongooseSchema.Types.ObjectId, cartItemId: MongooseSchema.Types.ObjectId, session: ClientSession) {
     let user: any, cartItem: any, cart: any, product: any;
     try {
       user = await this.userModel.findById(userId);
@@ -102,7 +102,7 @@ export class CartService {
       return cartItem._id != cartItemId;
     });
     cart.totalPrice -= Math.round(cartItem.quantity * product.price * 100) / 100;
-    await cart.save();
+    await cart.save({ session });
     return cart;
   }
 
@@ -120,7 +120,7 @@ export class CartService {
     return cart;
   }
 
-  async payProductsInCart(userId: MongooseSchema.Types.ObjectId, money: number) {
+  async payProductsInCart(userId: MongooseSchema.Types.ObjectId, money: number, session: ClientSession) {
     let user: any;
     try {
       user = await this.userModel.findById(userId);
@@ -138,25 +138,25 @@ export class CartService {
       errorHandlingException(logLabel, null, true, HttpStatus.UNPROCESSABLE_ENTITY, 'Product is sold out');
     }
     money -= order.totalPrice;
-    await this.updateProductsQuantity(order.orderItems);
-    await this.archiveOrder(user, order);
+    await this.updateProductsQuantity(order.orderItems, session);
+    await this.archiveOrder(user, order, session);
     return { order: order, moneyBack: money };
   }
 
-  async archiveOrder(user: any, order: any) {
+  async archiveOrder(user: any, order: any, session: ClientSession) {
     const cart = new this.orderModel();
-    await cart.save();
+    await cart.save({ session });
     user.cart = cart._id;
     order.archived = true;
-    order.save();
-    await user.save();
+    await order.save({ session });
+    await user.save({ session });
   }
 
-  async updateProductsQuantity(orderItems: any) {
+  async updateProductsQuantity(orderItems: any, session: ClientSession) {
     for (const orderItem of orderItems) {
       const product = await this.productModel.findById(orderItem.product);
       product.quantity -= orderItem.quantity;
-      await product.save();
+      await product.save({ session });
     }
   }
 

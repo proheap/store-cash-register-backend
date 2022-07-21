@@ -18,11 +18,17 @@ export class ProductController {
 
   @Post()
   async createProduct(@Body() createProductDto: CreateProductDto, @Res() res: Response) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
     try {
-      const newProduct: any = await this.productService.createProduct(createProductDto);
+      const newProduct: any = await this.productService.createProduct(createProductDto, session);
+      await session.commitTransaction();
       return res.status(HttpStatus.CREATED).send({ data: newProduct });
     } catch (error) {
+      await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
+    } finally {
+      session.endSession();
     }
   }
 
@@ -39,21 +45,33 @@ export class ProductController {
 
   @Put(':id')
   async updateProduct(@Param('id') id: MongooseSchema.Types.ObjectId, @Body() updateProductDto: UpdateProductDto, @Res() res: Response) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
     try {
-      const product: any = await this.productService.updateProduct(id, updateProductDto);
+      const product: any = await this.productService.updateProduct(id, updateProductDto, session);
+      await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: product });
     } catch (error) {
+      await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
+    } finally {
+      session.endSession();
     }
   }
 
   @Delete(':id')
   async deleteProduct(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
     try {
-      await this.productService.deleteProduct(id);
-      return res.status(HttpStatus.NO_CONTENT).send();
+      await this.productService.deleteProduct(id, session);
+      await session.commitTransaction();
+      return res.status(HttpStatus.NO_CONTENT).send({});
     } catch (error) {
+      await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
+    } finally {
+      session.endSession();
     }
   }
 

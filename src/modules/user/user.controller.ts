@@ -20,7 +20,7 @@ export class UserController {
   async getLoggedUser(@GetCurrentUserId() id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
     try {
       const user: any = await this.userService.getUserById(id);
-      return res.status(HttpStatus.OK).send(user);
+      return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
       errorHandlingException(logLabel, error, true, error.status);
     }
@@ -28,11 +28,17 @@ export class UserController {
 
   @Put()
   async updateLoggedUser(@GetCurrentUserId() id: MongooseSchema.Types.ObjectId, @Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
     try {
-      const user: any = await this.userService.updateUser(id, updateUserDto);
-      return res.status(HttpStatus.OK).send(user);
+      const user: any = await this.userService.updateUser(id, updateUserDto, session);
+      await session.commitTransaction();
+      return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
+      await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
+    } finally {
+      session.endSession();
     }
   }
 
@@ -40,7 +46,7 @@ export class UserController {
   async changePassword(@GetCurrentUserId() id: MongooseSchema.Types.ObjectId, @Body() changePasswordDto: ChangePasswordDto, @Res() res: Response) {
     try {
       const user: any = await this.userService.changePassword(id, changePasswordDto);
-      return res.status(HttpStatus.OK).send(user);
+      return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
       errorHandlingException(logLabel, error, true, error.status);
     }
@@ -50,7 +56,7 @@ export class UserController {
   async getUserById(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
     try {
       const user: any = await this.userService.getUserById(id);
-      return res.status(HttpStatus.OK).send(user);
+      return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
       errorHandlingException(logLabel, error, true, error.status);
     }
@@ -58,21 +64,33 @@ export class UserController {
 
   @Put('manage/:id')
   async updateUser(@Param('id') id: MongooseSchema.Types.ObjectId, @Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
     try {
-      const user: any = await this.userService.updateUser(id, updateUserDto);
-      return res.status(HttpStatus.OK).send(user);
+      const user: any = await this.userService.updateUser(id, updateUserDto, session);
+      await session.commitTransaction();
+      return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
+      await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
+    } finally {
+      session.endSession();
     }
   }
 
   @Delete('manage/:id')
   async deleteUser(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
     try {
-      await this.userService.deleteUser(id);
-      return res.status(HttpStatus.NO_CONTENT).send();
+      const user: any = await this.userService.deleteUser(id, session);
+      await session.commitTransaction();
+      return res.status(HttpStatus.NO_CONTENT).send(user);
     } catch (error) {
+      await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
+    } finally {
+      session.endSession();
     }
   }
 
@@ -80,7 +98,7 @@ export class UserController {
   async listUsers(@Res() res: Response) {
     try {
       const users: any = await this.userService.listUsers();
-      return res.status(HttpStatus.OK).send(users);
+      return res.status(HttpStatus.OK).send({ data: users });
     } catch (error) {
       errorHandlingException(logLabel, error, true, error.status);
     }
