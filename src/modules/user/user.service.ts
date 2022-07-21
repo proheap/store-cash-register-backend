@@ -1,6 +1,6 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Schema as MongooseSchema } from 'mongoose';
+import { ClientSession, Model, Schema as MongooseSchema } from 'mongoose';
 import { errorHandlingException } from '../../helpers/logger.helper';
 import { hashData, hashCompare } from '../../helpers/hash.helper';
 
@@ -27,7 +27,7 @@ export class UserService {
     return user;
   }
 
-  async updateUser(id: MongooseSchema.Types.ObjectId, updateUserDto: UpdateUserDto) {
+  async updateUser(id: MongooseSchema.Types.ObjectId, updateUserDto: UpdateUserDto, session: ClientSession) {
     let user: any;
     try {
       user = await this.userModel.findById(id).select('-hashPassword -hashToken').exec();
@@ -38,7 +38,7 @@ export class UserService {
       user.address.apartment = updateUserDto.apartment;
       user.address.postalCode = updateUserDto.postalCode;
       user.address.country = updateUserDto.country;
-      user = await user.save();
+      user = await user.save({ session });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -48,7 +48,7 @@ export class UserService {
     return user;
   }
 
-  async changePassword(id: MongooseSchema.Types.ObjectId, changePasswordDto: ChangePasswordDto) {
+  async changePassword(id: MongooseSchema.Types.ObjectId, changePasswordDto: ChangePasswordDto, session: ClientSession) {
     let user: any;
     try {
       user = await this.userModel.findById(id);
@@ -64,15 +64,15 @@ export class UserService {
     }
     const hash = await hashData(changePasswordDto.newPassword);
     user.hashPassword = hash;
-    await user.save();
+    await user.save({ session });
     user = await this.userModel.findById(user.id).select('-hashPassword -hashToken').exec();
     return user;
   }
 
-  async deleteUser(id: MongooseSchema.Types.ObjectId) {
+  async deleteUser(id: MongooseSchema.Types.ObjectId, session: ClientSession) {
     let user: any;
     try {
-      user = await this.userModel.findByIdAndDelete(id);
+      user = await this.userModel.findByIdAndDelete(id).session(session);
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }

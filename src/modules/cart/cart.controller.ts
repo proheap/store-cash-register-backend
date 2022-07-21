@@ -21,11 +21,17 @@ export class CartController {
     @Body('quantity') quantity: number,
     @Res() res: Response,
   ) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
     try {
-      const cart: any = await this.cartService.addProductToCart(userId, productId, quantity);
+      const cart: any = await this.cartService.addProductToCart(userId, productId, quantity, session);
+      await session.commitTransaction();
       return res.status(HttpStatus.CREATED).send({ data: cart });
     } catch (error) {
+      await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
+    } finally {
+      session.endSession();
     }
   }
 
@@ -36,11 +42,17 @@ export class CartController {
     @Body('quantity') quantity: number,
     @Res() res: Response,
   ) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
     try {
-      const cart: any = await this.cartService.updateProductFromCart(userId, productId, quantity);
+      const cart: any = await this.cartService.updateProductFromCart(userId, productId, quantity, session);
+      await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: cart });
     } catch (error) {
+      await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
+    } finally {
+      session.endSession();
     }
   }
 
@@ -50,11 +62,17 @@ export class CartController {
     @Param('id') productId: MongooseSchema.Types.ObjectId,
     @Res() res: Response,
   ) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
     try {
-      await this.cartService.removeProductFromCart(userId, productId);
-      return res.status(HttpStatus.NO_CONTENT).send();
+      await this.cartService.removeProductFromCart(userId, productId, session);
+      await session.commitTransaction();
+      return res.status(HttpStatus.NO_CONTENT).send({});
     } catch (error) {
+      await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
+    } finally {
+      session.endSession();
     }
   }
 
@@ -70,11 +88,17 @@ export class CartController {
 
   @Post('payment')
   async payProductsInCart(@GetCurrentUserId() userId: MongooseSchema.Types.ObjectId, @Body('money') money: number, @Res() res: Response) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
     try {
-      const order: any = await this.cartService.payProductsInCart(userId, money);
+      const order: any = await this.cartService.payProductsInCart(userId, money, session);
+      await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: order });
     } catch (error) {
+      await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
+    } finally {
+      session.endSession();
     }
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Schema as MongooseSchema } from 'mongoose';
+import { ClientSession, Model, Schema as MongooseSchema } from 'mongoose';
 import { errorHandlingException } from '../../helpers/logger.helper';
 
 import { Product } from '../../models/product.model';
@@ -14,7 +14,7 @@ const logLabel = 'PRODUCT-SERVICE';
 export class ProductService {
   constructor(@InjectModel(Product.name) private readonly productModel: Model<Product>, @InjectModel(Order.name) private readonly orderModel: Model<Order>) {}
 
-  async createProduct(createProductDto: CreateProductDto) {
+  async createProduct(createProductDto: CreateProductDto, session: ClientSession) {
     let product = await this.productModel.findOne({ title: createProductDto.title });
     if (product) {
       errorHandlingException(logLabel, null, true, HttpStatus.CONFLICT, 'Product already exists');
@@ -26,7 +26,7 @@ export class ProductService {
       quantity: createProductDto.quantity,
     });
     try {
-      product = await product.save();
+      product = await product.save({ session });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -49,7 +49,7 @@ export class ProductService {
     return product;
   }
 
-  async updateProduct(id: MongooseSchema.Types.ObjectId, updateProductDto: UpdateProductDto) {
+  async updateProduct(id: MongooseSchema.Types.ObjectId, updateProductDto: UpdateProductDto, session: ClientSession) {
     let product: any;
     try {
       product = await this.productModel.findById(id);
@@ -65,18 +65,18 @@ export class ProductService {
     product.price = updateProductDto.price;
     product.quantity = updateProductDto.quantity;
     try {
-      await product.save();
+      await product.save({ session });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    await this.updateCartPrices(id, product.price, oldPrice);
+    await this.updateCartPrices(id, product.price, oldPrice, session);
     return product;
   }
 
-  async deleteProduct(id: MongooseSchema.Types.ObjectId) {
+  async deleteProduct(id: MongooseSchema.Types.ObjectId, session: ClientSession) {
     let product: any;
     try {
-      product = this.productModel.findByIdAndDelete(id);
+      product = this.productModel.findByIdAndDelete(id).session(session);
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -96,7 +96,7 @@ export class ProductService {
     return products;
   }
 
-  async updateCartPrices(productId: MongooseSchema.Types.ObjectId, newPrice: number, oldPrice: number) {
+  async updateCartPrices(productId: MongooseSchema.Types.ObjectId, newPrice: number, oldPrice: number, session: ClientSession) {
     let carts = [];
     try {
       carts = await this.orderModel.find({ archived: false });
@@ -105,7 +105,7 @@ export class ProductService {
         if (cartItem) {
           cart.totalPrice -= Math.round(cartItem.quantity * oldPrice * 100) / 100;
           cart.totalPrice += Math.round(cartItem.quantity * newPrice * 100) / 100;
-          await cart.save();
+          await cart.save({ session });
         }
       }
     } catch (error) {
