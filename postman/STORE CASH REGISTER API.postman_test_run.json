@@ -1,0 +1,638 @@
+{
+	"id": "02ef9425-46d5-4d2c-82ff-f479d18edd06",
+	"name": "STORE CASH REGISTER API",
+	"timestamp": "2022-07-19T15:46:43.971Z",
+	"collection_id": "13816551-77cd33b1-e6b2-46b4-bd72-90ebad8f77bb",
+	"folder_id": 0,
+	"environment_id": "0",
+	"totalPass": 20,
+	"totalFail": 0,
+	"results": [
+		{
+			"id": "92ea9a9f-86f1-49f7-b075-e5191fe25f19",
+			"name": "Registration",
+			"url": "http://localhost:3000/api/auth/register",
+			"time": 115,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"REGISTRATION TEST - CREATED": true
+			},
+			"testPassFailCounts": {
+				"REGISTRATION TEST - CREATED": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				115
+			],
+			"allTests": [
+				{
+					"REGISTRATION TEST - CREATED": true
+				}
+			]
+		},
+		{
+			"id": "66e34e5b-5ea6-4479-9948-1b9b31fb8923",
+			"name": "Login",
+			"url": "http://localhost:3000/api/auth/login",
+			"time": 104,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"LOGIN TEST - OK": true
+			},
+			"testPassFailCounts": {
+				"LOGIN TEST - OK": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				104
+			],
+			"allTests": [
+				{
+					"LOGIN TEST - OK": true
+				}
+			]
+		},
+		{
+			"id": "659f5e6a-30a3-4583-9c0d-991602edc7d2",
+			"name": "Logout",
+			"url": "http://localhost:3000/api/auth/logout",
+			"time": 5,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"LOGOUT TEST - OK": true
+			},
+			"testPassFailCounts": {
+				"LOGOUT TEST - OK": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				5
+			],
+			"allTests": [
+				{
+					"LOGOUT TEST - OK": true
+				}
+			]
+		},
+		{
+			"id": "3e5032aa-d81d-499a-869a-f7b4e11a3124",
+			"name": "Change password",
+			"url": "http://localhost:3000/api/user/password",
+			"time": 102,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"CHANGE PASSWORD TEST - OK": true
+			},
+			"testPassFailCounts": {
+				"CHANGE PASSWORD TEST - OK": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				102
+			],
+			"allTests": [
+				{
+					"CHANGE PASSWORD TEST - OK": true
+				}
+			]
+		},
+		{
+			"id": "383f6a1d-b1aa-4c4d-ab3c-93fb6ac1ad9d",
+			"name": "Update logged user",
+			"url": "http://localhost:3000/api/user",
+			"time": 7,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"UPDATE LOGGED USER TEST - OK": true
+			},
+			"testPassFailCounts": {
+				"UPDATE LOGGED USER TEST - OK": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				7
+			],
+			"allTests": [
+				{
+					"UPDATE LOGGED USER TEST - OK": true
+				}
+			]
+		},
+		{
+			"id": "56b0ce4c-d8bc-4ff0-a2e6-28206f92e258",
+			"name": "Update user by ID",
+			"url": "http://localhost:3000/api/user/manage/62d6d1dfe5d0f7354e53a7cd",
+			"time": 7,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"UPDATE USER BY ID TEST - OK": true
+			},
+			"testPassFailCounts": {
+				"UPDATE USER BY ID TEST - OK": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				7
+			],
+			"allTests": [
+				{
+					"UPDATE USER BY ID TEST - OK": true
+				}
+			]
+		},
+		{
+			"id": "1afc5070-6215-475b-b972-a18789be18c7",
+			"name": "Get user by ID",
+			"url": "http://localhost:3000/api/user/manage/62d6d1dfe5d0f7354e53a7cd",
+			"time": 5,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"GET USER BY ID TEST - OK": true
+			},
+			"testPassFailCounts": {
+				"GET USER BY ID TEST - OK": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				5
+			],
+			"allTests": [
+				{
+					"GET USER BY ID TEST - OK": true
+				}
+			]
+		},
+		{
+			"id": "30600371-1316-4bf0-8d04-9ca95ca8d30f",
+			"name": "Get logged user",
+			"url": "http://localhost:3000/api/user",
+			"time": 5,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"GET LOGGED USER - OK": true
+			},
+			"testPassFailCounts": {
+				"GET LOGGED USER - OK": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				5
+			],
+			"allTests": [
+				{
+					"GET LOGGED USER - OK": true
+				}
+			]
+		},
+		{
+			"id": "246263fa-ddb2-42f5-b129-a9e6b614f5d4",
+			"name": "List users",
+			"url": "http://localhost:3000/api/user",
+			"time": 5,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"LIST USERS - OK": true
+			},
+			"testPassFailCounts": {
+				"LIST USERS - OK": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				5
+			],
+			"allTests": [
+				{
+					"LIST USERS - OK": true
+				}
+			]
+		},
+		{
+			"id": "3f03e9f2-2baf-40f1-93fb-863223d6f668",
+			"name": "Create product",
+			"url": "http://localhost:3000/api/product",
+			"time": 7,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"CREATE PRODUCT TO CART TEST - CREATED": true
+			},
+			"testPassFailCounts": {
+				"CREATE PRODUCT TO CART TEST - CREATED": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				7
+			],
+			"allTests": [
+				{
+					"CREATE PRODUCT TO CART TEST - CREATED": true
+				}
+			]
+		},
+		{
+			"id": "e0d027d2-285b-4ed6-8683-b8d6dee0150a",
+			"name": "Update product by ID",
+			"url": "http://localhost:3000/api/product/62d6d1e1e5d0f7354e53a7f0",
+			"time": 12,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"UPDATE PRODUCT BY ID TEST - OK": true
+			},
+			"testPassFailCounts": {
+				"UPDATE PRODUCT BY ID TEST - OK": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				12
+			],
+			"allTests": [
+				{
+					"UPDATE PRODUCT BY ID TEST - OK": true
+				}
+			]
+		},
+		{
+			"id": "f230e0b0-cba9-4868-ba83-e2b2588ded9e",
+			"name": "Get product by ID",
+			"url": "http://localhost:3000/api/product/62d6d1e1e5d0f7354e53a7f0",
+			"time": 5,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"GET PRODUCT BY ID TEST - OK": true
+			},
+			"testPassFailCounts": {
+				"GET PRODUCT BY ID TEST - OK": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				5
+			],
+			"allTests": [
+				{
+					"GET PRODUCT BY ID TEST - OK": true
+				}
+			]
+		},
+		{
+			"id": "313e0529-c339-4019-a900-deb27894d152",
+			"name": "List products",
+			"url": "http://localhost:3000/api/product",
+			"time": 6,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"LIST PRODUCTS TEST - OK": true
+			},
+			"testPassFailCounts": {
+				"LIST PRODUCTS TEST - OK": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				6
+			],
+			"allTests": [
+				{
+					"LIST PRODUCTS TEST - OK": true
+				}
+			]
+		},
+		{
+			"id": "56343af9-6f08-41af-bf36-d152f5936150",
+			"name": "Add product to cart",
+			"url": "http://localhost:3000/api/cart/product/62d6d1e1e5d0f7354e53a7f0",
+			"time": 10,
+			"responseCode": {
+				"code": 201,
+				"name": "Created"
+			},
+			"tests": {
+				"ADD PRODUCT TO CART TEST - CREATED": true
+			},
+			"testPassFailCounts": {
+				"ADD PRODUCT TO CART TEST - CREATED": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				10
+			],
+			"allTests": [
+				{
+					"ADD PRODUCT TO CART TEST - CREATED": true
+				}
+			]
+		},
+		{
+			"id": "4b134815-4519-45b1-a095-04d07e5392cd",
+			"name": "Update product in cart",
+			"url": "http://localhost:3000/api/cart/item/62d6d1e2e5d0f7354e53a7fc",
+			"time": 10,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"UPDATE PRODUCT IN CART TEST - OK": true
+			},
+			"testPassFailCounts": {
+				"UPDATE PRODUCT IN CART TEST - OK": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				10
+			],
+			"allTests": [
+				{
+					"UPDATE PRODUCT IN CART TEST - OK": true
+				}
+			]
+		},
+		{
+			"id": "12e581d8-1e45-4b9e-986d-72b7559b4000",
+			"name": "List products in cart",
+			"url": "http://localhost:3000/api/cart",
+			"time": 7,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"LIST PRODUCTS IN CART TEST - OK": true
+			},
+			"testPassFailCounts": {
+				"LIST PRODUCTS IN CART TEST - OK": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				7
+			],
+			"allTests": [
+				{
+					"LIST PRODUCTS IN CART TEST - OK": true
+				}
+			]
+		},
+		{
+			"id": "789e53d1-786b-43a5-bcb5-84374b25afdd",
+			"name": "Remove product from cart",
+			"url": "http://localhost:3000/api/cart/item/62d6d1e2e5d0f7354e53a7fc",
+			"time": 12,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"REMOVE PRODUCT FROM CART TEST - NO CONTENT": true
+			},
+			"testPassFailCounts": {
+				"REMOVE PRODUCT FROM CART TEST - NO CONTENT": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				12
+			],
+			"allTests": [
+				{
+					"REMOVE PRODUCT FROM CART TEST - NO CONTENT": true
+				}
+			]
+		},
+		{
+			"id": "a7853ceb-0bd4-4135-9b4c-e4351057f281",
+			"name": "Delete product by ID",
+			"url": "http://localhost:3000/api/product/62d6d1e1e5d0f7354e53a7f0",
+			"time": 6,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"DELETE PRODUCT BY ID TEST - NO CONTENT": true
+			},
+			"testPassFailCounts": {
+				"DELETE PRODUCT BY ID TEST - NO CONTENT": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				6
+			],
+			"allTests": [
+				{
+					"DELETE PRODUCT BY ID TEST - NO CONTENT": true
+				}
+			]
+		},
+		{
+			"id": "5f3957d2-07b0-4f4e-9151-b86d24689a2b",
+			"name": "Pay order from cart",
+			"url": "http://localhost:3000/api/cart/payment",
+			"time": 10,
+			"responseCode": {
+				"code": 200,
+				"name": "OK"
+			},
+			"tests": {
+				"PAY ORDER FROM CART TEST - OK": true
+			},
+			"testPassFailCounts": {
+				"PAY ORDER FROM CART TEST - OK": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				10
+			],
+			"allTests": [
+				{
+					"PAY ORDER FROM CART TEST - OK": true
+				}
+			]
+		},
+		{
+			"id": "4cd8cae9-7c5d-40f0-8b73-f18a64725bf6",
+			"name": "Delete user by ID",
+			"url": "http://localhost:3000/api/user/manage/62d6d1dfe5d0f7354e53a7cd",
+			"time": 5,
+			"responseCode": {
+				"code": 204,
+				"name": "No Content"
+			},
+			"tests": {
+				"DELETE USER BY ID TEST - NO CONTENT": true
+			},
+			"testPassFailCounts": {
+				"DELETE USER BY ID TEST - NO CONTENT": {
+					"pass": 1,
+					"fail": 0
+				}
+			},
+			"times": [
+				5
+			],
+			"allTests": [
+				{
+					"DELETE USER BY ID TEST - NO CONTENT": true
+				}
+			]
+		}
+	],
+	"count": 1,
+	"totalTime": 445,
+	"collection": {
+		"requests": [
+			{
+				"id": "92ea9a9f-86f1-49f7-b075-e5191fe25f19",
+				"method": "POST"
+			},
+			{
+				"id": "66e34e5b-5ea6-4479-9948-1b9b31fb8923",
+				"method": "POST"
+			},
+			{
+				"id": "659f5e6a-30a3-4583-9c0d-991602edc7d2",
+				"method": "POST"
+			},
+			{
+				"id": "3e5032aa-d81d-499a-869a-f7b4e11a3124",
+				"method": "PUT"
+			},
+			{
+				"id": "383f6a1d-b1aa-4c4d-ab3c-93fb6ac1ad9d",
+				"method": "PUT"
+			},
+			{
+				"id": "56b0ce4c-d8bc-4ff0-a2e6-28206f92e258",
+				"method": "PUT"
+			},
+			{
+				"id": "1afc5070-6215-475b-b972-a18789be18c7",
+				"method": "GET"
+			},
+			{
+				"id": "30600371-1316-4bf0-8d04-9ca95ca8d30f",
+				"method": "GET"
+			},
+			{
+				"id": "246263fa-ddb2-42f5-b129-a9e6b614f5d4",
+				"method": "GET"
+			},
+			{
+				"id": "3f03e9f2-2baf-40f1-93fb-863223d6f668",
+				"method": "POST"
+			},
+			{
+				"id": "e0d027d2-285b-4ed6-8683-b8d6dee0150a",
+				"method": "PUT"
+			},
+			{
+				"id": "f230e0b0-cba9-4868-ba83-e2b2588ded9e",
+				"method": "GET"
+			},
+			{
+				"id": "313e0529-c339-4019-a900-deb27894d152",
+				"method": "GET"
+			},
+			{
+				"id": "56343af9-6f08-41af-bf36-d152f5936150",
+				"method": "POST"
+			},
+			{
+				"id": "4b134815-4519-45b1-a095-04d07e5392cd",
+				"method": "PUT"
+			},
+			{
+				"id": "12e581d8-1e45-4b9e-986d-72b7559b4000",
+				"method": "GET"
+			},
+			{
+				"id": "789e53d1-786b-43a5-bcb5-84374b25afdd",
+				"method": "DELETE"
+			},
+			{
+				"id": "a7853ceb-0bd4-4135-9b4c-e4351057f281",
+				"method": "DELETE"
+			},
+			{
+				"id": "5f3957d2-07b0-4f4e-9151-b86d24689a2b",
+				"method": "POST"
+			},
+			{
+				"id": "4cd8cae9-7c5d-40f0-8b73-f18a64725bf6",
+				"method": "DELETE"
+			}
+		]
+	}
+}
