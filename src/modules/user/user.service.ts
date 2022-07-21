@@ -48,7 +48,7 @@ export class UserService {
     return user;
   }
 
-  async changePassword(id: MongooseSchema.Types.ObjectId, changePasswordDto: ChangePasswordDto) {
+  async changePassword(id: MongooseSchema.Types.ObjectId, changePasswordDto: ChangePasswordDto, session: ClientSession) {
     let user: any;
     try {
       user = await this.userModel.findById(id);
@@ -64,7 +64,7 @@ export class UserService {
     }
     const hash = await hashData(changePasswordDto.newPassword);
     user.hashPassword = hash;
-    await user.save();
+    await user.save({ session });
     user = await this.userModel.findById(user.id).select('-hashPassword -hashToken').exec();
     return user;
   }

@@ -31,13 +31,12 @@ services:
             - ./.env
         volumes:
             - ./mongo-entrypoint:/docker-entrypoint-initdb.d
-            - ./mongo-entrypoint/initiate-replica.sh:/deployment-scripts/initiate-replica.sh
         entrypoint:
             - bash
             - -c
             - |
-                chmod +x /deployment-scripts/initiate-replica.sh
-                exec /deployment-scripts/initiate-replica.sh ${DB_HOST} ${DB_PORT} ${DB_NAME} ${DB_USER} ${DB_PASSWORD}
+                chmod +x /docker-entrypoint-initdb.d/mongo-init.sh
+                exec /docker-entrypoint-initdb.d/mongo-init.sh
 volumes:
     node-modules-volume:
 networks:

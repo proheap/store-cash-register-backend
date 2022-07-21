@@ -44,11 +44,17 @@ export class UserController {
 
   @Put('password')
   async changePassword(@GetCurrentUserId() id: MongooseSchema.Types.ObjectId, @Body() changePasswordDto: ChangePasswordDto, @Res() res: Response) {
+    const session = await this.mongoConnection.startSession();
+    session.startTransaction();
     try {
-      const user: any = await this.userService.changePassword(id, changePasswordDto);
+      const user: any = await this.userService.changePassword(id, changePasswordDto, session);
+      await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
+      await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
+    } finally {
+      session.endSession();
     }
   }
 

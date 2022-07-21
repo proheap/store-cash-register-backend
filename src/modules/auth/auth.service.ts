@@ -43,10 +43,9 @@ export class AuthService {
       cart: cart._id,
     });
     try {
+      const tokens = await this.getTokens(newUser, newUser.email);
+      newUser = await this.updateRefreshToken(newUser, tokens.refreshToken);
       newUser = await newUser.save({ session });
-      const tokens = await this.getTokens(newUser._id, newUser.email);
-      await this.updateRefreshToken(newUser._id, tokens.refreshToken, session);
-      newUser = await this.userModel.findOne({ _id: newUser._id }).select('-hashPassword -hashToken').exec();
     } catch (error) {
       await this.orderModel.findByIdAndDelete(cart._id);
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -70,7 +69,7 @@ export class AuthService {
     }
     try {
       tokens = await this.getTokens(user._id, user.email);
-      await this.updateRefreshToken(user._id, tokens.refreshToken, session);
+      await this.updateRefreshToken(user._id, tokens.refreshToken);
       user = await this.userModel.findById(user.id).select('-hashPassword -hashToken').exec();
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -86,9 +85,9 @@ export class AuthService {
     }
   }
 
-  async getTokens(userId: MongooseSchema.Types.ObjectId, email: string) {
+  async getTokens(user: any, email: string) {
     const jwtPayload: JwtPayload = {
-      sub: userId,
+      sub: user._id,
       email: email,
     };
     const [accessToken, refreshToken] = await Promise.all([
@@ -107,15 +106,9 @@ export class AuthService {
     };
   }
 
-  async updateRefreshToken(userId: MongooseSchema.Types.ObjectId, refreshToken: string, session: ClientSession) {
+  async updateRefreshToken(user: any, refreshToken: string) {
     const hash = await hashData(refreshToken);
-    const user = await this.userModel.findById(userId);
     user.hashToken = hash;
-    try {
-      user.save({ session });
-    } catch (error) {
-      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
     return user;
   }
 
