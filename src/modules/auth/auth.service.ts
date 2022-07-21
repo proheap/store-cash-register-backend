@@ -45,13 +45,12 @@ export class AuthService {
     try {
       const tokens = await this.getTokens(newUser, newUser.email);
       newUser = await this.updateRefreshToken(newUser, tokens.refreshToken);
-      newUser = await newUser.save({ session });
+      await newUser.save({ session });
+      newUser = await this.secureUserData(newUser);
     } catch (error) {
-      await this.orderModel.findByIdAndDelete(cart._id);
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!newUser) {
-      await this.orderModel.findByIdAndDelete(cart._id);
       errorHandlingException(logLabel, null, true, HttpStatus.CONFLICT, 'User not created');
     }
     return newUser;
@@ -68,9 +67,10 @@ export class AuthService {
       errorHandlingException(logLabel, null, true, HttpStatus.FORBIDDEN, 'Access Denied');
     }
     try {
-      tokens = await this.getTokens(user._id, user.email);
-      await this.updateRefreshToken(user._id, tokens.refreshToken);
-      user = await this.userModel.findById(user.id).select('-hashPassword -hashToken').exec();
+      tokens = await this.getTokens(user, user.email);
+      user = await this.updateRefreshToken(user, tokens.refreshToken);
+      await user.save({ session });
+      user = await this.secureUserData(user);
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -129,6 +129,12 @@ export class AuthService {
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    return user;
+  }
+
+  async secureUserData(user: any) {
+    user.hashPassword = undefined;
+    user.hashToken = undefined;
     return user;
   }
 }
