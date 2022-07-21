@@ -100,7 +100,7 @@ export class UserController {
     }
   }
 
-  @Get()
+  @Get('list')
   async listUsers(@Res() res: Response) {
     try {
       const users: any = await this.userService.listUsers();
