@@ -20,8 +20,6 @@ REST Backend server for Store Cash Register in Node.js (NestJS) using MongoDB wi
 
 ### FUNCIONALITY
 
-### FUNCIONALITY
-
 - authentication (register, login)
 - authorization
 - update/delete user profile
