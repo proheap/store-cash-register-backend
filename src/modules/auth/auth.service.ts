@@ -34,7 +34,7 @@ export class AuthService {
       username: registerDto.username,
       email: registerDto.email,
       hashPassword: hash,
-      role: 'USER',
+      roles: registerDto.roles,
       'address.city': registerDto.city,
       'address.street': registerDto.street,
       'address.apartment': registerDto.apartment,
@@ -43,7 +43,7 @@ export class AuthService {
       cart: cart._id,
     });
     try {
-      const tokens = await this.getTokens(newUser, newUser.email);
+      const tokens = await this.getTokens(newUser);
       newUser = await this.updateRefreshToken(newUser, tokens.refreshToken);
       await newUser.save({ session });
       newUser = await this.secureUserData(newUser);
@@ -67,7 +67,7 @@ export class AuthService {
       errorHandlingException(logLabel, null, true, HttpStatus.FORBIDDEN, 'Access Denied');
     }
     try {
-      tokens = await this.getTokens(user, user.email);
+      tokens = await this.getTokens(user);
       user = await this.updateRefreshToken(user, tokens.refreshToken);
       await user.save({ session });
       user = await this.secureUserData(user);
@@ -85,10 +85,11 @@ export class AuthService {
     }
   }
 
-  async getTokens(user: any, email: string) {
+  async getTokens(user: any) {
     const jwtPayload: JwtPayload = {
       sub: user._id,
-      email: email,
+      email: user.email,
+      roles: user.roles,
     };
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(jwtPayload, {

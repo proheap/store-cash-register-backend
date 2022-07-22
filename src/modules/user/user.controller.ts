@@ -2,13 +2,14 @@ import { Controller, Get, Put, Delete, Body, Param, Res, HttpStatus } from '@nes
 import { InjectConnection } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Connection, Schema as MongooseSchema } from 'mongoose';
-import { appConstants } from '../../configs/app.config';
+import { appConstants, validRoles } from '../../configs/app.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
 import { GetCurrentUserId } from '../../common/decorators/getCurrentUserId.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
 
 const logLabel = 'USER-CONTROLLER';
 
@@ -59,6 +60,7 @@ export class UserController {
   }
 
   @Get('manage/:id')
+  @Roles(validRoles.Admin)
   async getUserById(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
     try {
       const user: any = await this.userService.getUserById(id);
@@ -69,6 +71,7 @@ export class UserController {
   }
 
   @Put('manage/:id')
+  @Roles(validRoles.Admin)
   async updateUser(@Param('id') id: MongooseSchema.Types.ObjectId, @Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();

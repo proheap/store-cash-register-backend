@@ -17,8 +17,8 @@ const logLabel = 'AUTH-CONTROLLER';
 export class AuthController {
   constructor(@InjectConnection() private readonly mongoConnection: Connection, private authService: AuthService) {}
 
-  @PublicEndpoint()
   @Post('register')
+  @PublicEndpoint()
   async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
@@ -34,8 +34,8 @@ export class AuthController {
     }
   }
 
-  @PublicEndpoint()
   @Post('login')
+  @PublicEndpoint()
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
