@@ -17,8 +17,8 @@ export class User extends Document {
   @Prop({ required: false })
   hashToken: string;
 
-  @Prop({ required: true, enum: validRoles, default: validRoles[0] })
-  role: string;
+  @Prop({ type: [{ type: String, enum: validRoles }], required: true, default: [validRoles.User] })
+  roles: [string];
 
   @Prop({ required: false })
   firstName: string;

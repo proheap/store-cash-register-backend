@@ -5,4 +5,7 @@ export const appConstants = {
   jwtSecretKey: JWT_SECRET_KEY,
 };
 
-export const validRoles = ['USER', 'ADMIN'];
+export enum validRoles {
+  User = 'user',
+  Admin = 'admin',
+}

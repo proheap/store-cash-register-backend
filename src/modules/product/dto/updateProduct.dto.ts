@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsInt } from 'class-validator';
+import { IsNotEmpty, IsString, IsInt, IsNumber } from 'class-validator';
 
 export class UpdateProductDto {
   @IsString()
@@ -8,7 +8,7 @@ export class UpdateProductDto {
   @IsString()
   description: string;
 
-  @IsInt()
+  @IsNumber({ maxDecimalPlaces: 2 })
   @IsNotEmpty()
   price: number;
 
