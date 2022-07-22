@@ -63,6 +63,7 @@ export class ProductController {
   }
 
   @Delete(':id')
+  @Roles(validRoles.Admin)
   async deleteProduct(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
