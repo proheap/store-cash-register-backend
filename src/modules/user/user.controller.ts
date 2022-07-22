@@ -88,6 +88,7 @@ export class UserController {
   }
 
   @Delete('manage/:id')
+  @Roles(validRoles.Admin)
   async deleteUser(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
@@ -104,6 +105,7 @@ export class UserController {
   }
 
   @Get('list')
+  @Roles(validRoles.Admin)
   async listUsers(@Res() res: Response) {
     try {
       const users: any = await this.userService.listUsers();
