@@ -9,10 +9,21 @@ import { ProductModule } from './modules/product/product.module';
 import { CartModule } from './modules/cart/cart.module';
 import { connectionString } from './configs/database.config';
 import { AccessTokenGuard } from './common/guards/accessToken.guard';
+import { RolesGuard } from './common/guards/roles.guard';
 
 @Module({
   imports: [MongooseModule.forRoot(connectionString), AuthModule, UserModule, ProductModule, CartModule],
   controllers: [AppController],
-  providers: [AppService, { provide: APP_GUARD, useClass: AccessTokenGuard }],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: AccessTokenGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

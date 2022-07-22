@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsNotEmpty, IsString, IsEnum, IsInt, MinLength } from 'class-validator';
+import { validRoles } from '../../../configs/app.config';
 
 export class RegisterDto {
   @IsString()
@@ -14,9 +15,9 @@ export class RegisterDto {
   @MinLength(8)
   password: string;
 
-  @IsString()
+  @IsEnum(validRoles, { each: true })
   @IsNotEmpty()
-  role: any;
+  roles: [validRoles];
 
   @IsString()
   firstName: string;
