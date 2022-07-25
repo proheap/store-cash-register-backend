@@ -35,14 +35,15 @@ export class CartService {
       cart = await this.orderModel.findOne({ _id: user.cart, archived: false });
       let cartItem = await cart.orderItems.find((cartItem: any) => cartItem.product == productId);
       if (cartItem) {
+        cart.orderItems = cart.orderItems.filter((cartItem: any) => cartItem.product != productId);
         cartItem.quantity += quantity;
       } else {
         cartItem = {
           product: productId,
           quantity: quantity,
         };
-        cart.orderItems.push(cartItem);
       }
+      cart.orderItems.push(cartItem);
       cart.totalPrice += Math.round(quantity * product.price * 100) / 100;
       await cart.save({ session });
     } catch (error) {
@@ -51,7 +52,7 @@ export class CartService {
     return cart;
   }
 
-  async updateProductFromCart(userId: MongooseSchema.Types.ObjectId, cartItemId: MongooseSchema.Types.ObjectId, quantity: number, session: ClientSession) {
+  async updateProductFromCart(userId: MongooseSchema.Types.ObjectId, productId: MongooseSchema.Types.ObjectId, quantity: number, session: ClientSession) {
     let user: any, cartItem: any, product: any, cart: any;
     try {
       user = await this.userModel.findById(userId);
@@ -63,22 +64,24 @@ export class CartService {
     }
     try {
       cart = await this.orderModel.findById(user.cart);
-      cartItem = await cart.orderItems.find((cartItem: any) => cartItem._id == cartItemId);
-      product = await this.productModel.findById(cartItem.product);
+      cartItem = await cart.orderItems.find((cartItem: any) => cartItem.product == productId);
+      product = await this.productModel.findById(productId);
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    if (!product) {
+    if (!cartItem || !product) {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'Product with ID not found');
     }
+    cart.orderItems = cart.orderItems.filter((cartItem: any) => cartItem.product != productId);
     cart.totalPrice -= Math.round(cartItem.quantity * product.price * 100) / 100;
     cartItem.quantity = quantity;
+    cart.orderItems.push(cartItem);
     cart.totalPrice += Math.round(cartItem.quantity * product.price * 100) / 100;
     await cart.save({ session });
     return cart;
   }
 
-  async removeProductFromCart(userId: MongooseSchema.Types.ObjectId, cartItemId: MongooseSchema.Types.ObjectId, session: ClientSession) {
+  async removeProductFromCart(userId: MongooseSchema.Types.ObjectId, productId: MongooseSchema.Types.ObjectId, session: ClientSession) {
     let user: any, cartItem: any, cart: any, product: any;
     try {
       user = await this.userModel.findById(userId);
@@ -90,16 +93,16 @@ export class CartService {
     }
     try {
       cart = await this.orderModel.findById(user.cart);
-      cartItem = await cart.orderItems.find((cartItem: any) => cartItem._id == cartItemId);
-      product = await this.productModel.findById(cartItem.product);
+      cartItem = await cart.orderItems.find((cartItem: any) => cartItem.product == productId);
+      product = await this.productModel.findById(productId);
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    if (!product) {
+    if (!cartItem || !product) {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'Product with ID not found');
     }
     cart.orderItems = cart.orderItems.filter((cartItem: any) => {
-      return cartItem._id != cartItemId;
+      return cartItem.product != productId;
     });
     cart.totalPrice -= Math.round(cartItem.quantity * product.price * 100) / 100;
     await cart.save({ session });

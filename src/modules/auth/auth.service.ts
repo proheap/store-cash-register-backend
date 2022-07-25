@@ -35,6 +35,9 @@ export class AuthService {
       email: registerDto.email,
       hashPassword: hash,
       roles: registerDto.roles,
+      firstName: registerDto.firstName,
+      lastName: registerDto.lastName,
+      contactNumber: registerDto.contactNumber,
       'address.city': registerDto.city,
       'address.street': registerDto.street,
       'address.apartment': registerDto.apartment,
@@ -60,11 +63,11 @@ export class AuthService {
     let user: any, tokens: any;
     user = await this.userModel.findOne({ username: loginDto.username });
     if (!user) {
-      errorHandlingException(logLabel, null, true, HttpStatus.FORBIDDEN, 'Access Denied');
+      errorHandlingException(logLabel, null, true, HttpStatus.FORBIDDEN, 'Access denied');
     }
     const passwordMatches = await hashCompare(loginDto.password, user.hashPassword);
     if (!passwordMatches) {
-      errorHandlingException(logLabel, null, true, HttpStatus.FORBIDDEN, 'Access Denied');
+      errorHandlingException(logLabel, null, true, HttpStatus.FORBIDDEN, 'Access denied');
     }
     try {
       tokens = await this.getTokens(user);
