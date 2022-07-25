@@ -1,8 +1,20 @@
-const { OPEN_API_ROUTE, OPEN_API_TITLE, OPEN_API_DESC, OPEN_API_VERSION } = process.env;
+import { SecuritySchemeObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
+
+const { SWAGGER_ROUTE, SWAGGER_TITLE, SWAGGER_DESC, SWAGGER_VERSION, SWAGGER_SECURITY } = process.env;
 
 export const swaggerConstants = {
-  route: OPEN_API_ROUTE,
-  title: OPEN_API_TITLE,
-  description: OPEN_API_DESC,
-  version: OPEN_API_VERSION,
+  route: SWAGGER_ROUTE,
+  title: SWAGGER_TITLE,
+  description: SWAGGER_DESC,
+  version: SWAGGER_VERSION,
+  security: SWAGGER_SECURITY,
+};
+
+export const swaggerSecurityConfig: SecuritySchemeObject = {
+  type: 'http',
+  scheme: 'bearer',
+  bearerFormat: 'JWT',
+  name: 'JWT',
+  description: 'Enter JWT token',
+  in: 'header',
 };

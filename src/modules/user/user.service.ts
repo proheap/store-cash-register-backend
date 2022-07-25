@@ -31,8 +31,10 @@ export class UserService {
     let user: any;
     try {
       user = await this.userModel.findById(id).select('-hashPassword -hashToken').exec();
+      user.roles = updateUserDto.roles;
       user.firstName = updateUserDto.firstName;
       user.lastName = updateUserDto.lastName;
+      user.contactNumber = updateUserDto.contactNumber;
       user.address.city = updateUserDto.city;
       user.address.street = updateUserDto.street;
       user.address.apartment = updateUserDto.apartment;

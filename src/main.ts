@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { swaggerConstants } from './configs/swagger.config';
+import { swaggerConstants, swaggerSecurityConfig } from './configs/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,6 +11,7 @@ async function bootstrap() {
     .setTitle(swaggerConstants.title)
     .setDescription(swaggerConstants.description)
     .setVersion(swaggerConstants.version)
+    .addBearerAuth(swaggerSecurityConfig, swaggerConstants.security)
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup(swaggerConstants.route, app, document);

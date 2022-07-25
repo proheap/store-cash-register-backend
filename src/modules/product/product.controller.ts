@@ -1,11 +1,13 @@
 import { Controller, Post, Get, Put, Delete, Body, Param, Res, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiParam, ApiBody, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiParam, ApiBody, ApiResponse, ApiSecurity, ApiOperation } from '@nestjs/swagger';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Connection, Schema as MongooseSchema } from 'mongoose';
 import { appConstants, validRoles } from '../../configs/app.config';
+import { swaggerConstants } from '../../configs/swagger.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 
+import { Product } from '../../models/product.model';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/createProduct.dto';
 import { UpdateProductDto } from './dto/updateProduct.dto';
@@ -15,17 +17,19 @@ import { Roles } from '../../common/decorators/roles.decorator';
 const logLabel = 'PRODUCT-CONTROLLER';
 
 @ApiTags('Product')
+@ApiSecurity(swaggerConstants.security)
 @Controller(`${appConstants.appRoutePrefix}/product`)
 export class ProductController {
   constructor(@InjectConnection() private readonly mongoConnection: Connection, private productService: ProductService) {}
 
   @Post()
   @Roles(validRoles.Admin)
+  @ApiOperation({ summary: 'Create new product', description: 'Create new product (Admin only)' })
   @ApiBody({
     description: 'Product create data',
     type: CreateProductDto,
   })
-  @ApiResponse({ status: 201, description: 'The user has been successfully created.', type: CreateProductDto })
+  @ApiResponse({ status: 201, description: 'The user has been successfully created.', type: Product })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -46,13 +50,14 @@ export class ProductController {
     }
   }
 
-  @Get(':id')
+  @Get('item/:id')
   @PublicEndpoint()
+  @ApiOperation({ summary: 'Get product with ID', description: 'Get product with ID' })
   @ApiParam({
-    name: 'Product ID',
-    type: 'string',
+    name: 'ID of Product want to get',
+    type: String,
   })
-  @ApiResponse({ status: 200, description: 'The user has been successfully created.' })
+  @ApiResponse({ status: 200, description: 'The user has been successfully created.', type: Product })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Product with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
@@ -65,17 +70,18 @@ export class ProductController {
     }
   }
 
-  @Put(':id')
+  @Put('item/:id')
   @Roles(validRoles.Admin)
+  @ApiOperation({ summary: 'Update product with ID', description: 'Update product with ID (Admin only)' })
   @ApiParam({
-    name: 'Product ID',
-    type: 'string',
+    name: 'ID of Product want to update',
+    type: String,
   })
   @ApiBody({
     description: 'Product update data',
     type: UpdateProductDto,
   })
-  @ApiResponse({ status: 200, description: 'The user has been successfully updated.', type: UpdateProductDto })
+  @ApiResponse({ status: 200, description: 'The user has been successfully updated.', type: Product })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -96,11 +102,12 @@ export class ProductController {
     }
   }
 
-  @Delete(':id')
+  @Delete('item/:id')
   @Roles(validRoles.Admin)
+  @ApiOperation({ summary: 'Delete product with ID', description: 'Delete product with ID (Admin only)' })
   @ApiParam({
-    name: 'Product ID',
-    type: 'string',
+    name: 'ID of Product want to delete',
+    type: String,
   })
   @ApiResponse({ status: 204, description: 'The product has been successfully deleted.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
@@ -122,9 +129,10 @@ export class ProductController {
     }
   }
 
-  @Get()
+  @Get('list')
   @PublicEndpoint()
-  @ApiResponse({ status: 200, description: 'The products has been successfully get.' })
+  @ApiOperation({ summary: 'List all products', description: 'List all products' })
+  @ApiResponse({ status: 200, description: 'The products has been successfully get.', type: [Product] })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
   async listProducts(@Res() res: Response) {
     try {

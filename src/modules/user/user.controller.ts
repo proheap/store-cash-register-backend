@@ -1,11 +1,13 @@
 import { Controller, Get, Put, Delete, Body, Param, Res, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiParam, ApiBody, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiParam, ApiBody, ApiResponse, ApiSecurity, ApiOperation } from '@nestjs/swagger';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Response } from 'express';
 import { Connection, Schema as MongooseSchema } from 'mongoose';
 import { appConstants, validRoles } from '../../configs/app.config';
+import { swaggerConstants } from '../../configs/swagger.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 
+import { User } from '../../models/user.model';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
@@ -15,12 +17,14 @@ import { Roles } from '../../common/decorators/roles.decorator';
 const logLabel = 'USER-CONTROLLER';
 
 @ApiTags('User')
+@ApiSecurity(swaggerConstants.security)
 @Controller(`${appConstants.appRoutePrefix}/user`)
 export class UserController {
   constructor(@InjectConnection() private readonly mongoConnection: Connection, private userService: UserService) {}
 
   @Get()
-  @ApiResponse({ status: 200, description: 'The user has been successfully get.' })
+  @ApiOperation({ summary: 'Get logged user', description: 'Get logged user' })
+  @ApiResponse({ status: 200, description: 'The user has been successfully get.', type: User })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'User with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
@@ -34,11 +38,12 @@ export class UserController {
   }
 
   @Put()
+  @ApiOperation({ summary: 'Update logged user', description: 'Update logged user' })
   @ApiBody({
     description: 'User update data',
     type: UpdateUserDto,
   })
-  @ApiResponse({ status: 200, description: 'The user has been successfully updated.' })
+  @ApiResponse({ status: 200, description: 'The user has been successfully updated.', type: User })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'User with ID not found.' })
@@ -59,11 +64,12 @@ export class UserController {
   }
 
   @Put('password')
+  @ApiOperation({ summary: 'Change password', description: 'Change password of logged user' })
   @ApiBody({
     description: 'User passwords data',
     type: ChangePasswordDto,
   })
-  @ApiResponse({ status: 200, description: 'The password has been successfully changed.' })
+  @ApiResponse({ status: 200, description: 'The password has been successfully changed.', type: User })
   @ApiResponse({ status: 400, description: 'Old password is not valid.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'User with ID not found.' })
@@ -85,11 +91,12 @@ export class UserController {
 
   @Get('manage/:id')
   @Roles(validRoles.Admin)
+  @ApiOperation({ summary: 'Get user with ID', description: 'Get user with ID (Admin only)' })
   @ApiParam({
-    name: 'User ID',
-    type: 'string',
+    name: 'ID of User want to get',
+    type: String,
   })
-  @ApiResponse({ status: 200, description: 'The user has been successfully get.' })
+  @ApiResponse({ status: 200, description: 'The user has been successfully get.', type: User })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 404, description: 'User with ID not found.' })
@@ -105,15 +112,16 @@ export class UserController {
 
   @Put('manage/:id')
   @Roles(validRoles.Admin)
+  @ApiOperation({ summary: 'Update user with ID', description: 'Update user with ID (Admin only)' })
   @ApiParam({
-    name: 'User ID',
-    type: 'string',
+    name: 'ID of User want to update',
+    type: String,
   })
   @ApiBody({
     description: 'User passwords data',
     type: ChangePasswordDto,
   })
-  @ApiResponse({ status: 200, description: 'The user has been successfully updated.' })
+  @ApiResponse({ status: 200, description: 'The user has been successfully updated.', type: User })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -136,9 +144,10 @@ export class UserController {
 
   @Delete('manage/:id')
   @Roles(validRoles.Admin)
+  @ApiOperation({ summary: 'Delete user with ID', description: 'Delete user with ID (Admin only)' })
   @ApiParam({
-    name: 'User ID',
-    type: 'string',
+    name: 'ID of User want to delete',
+    type: String,
   })
   @ApiResponse({ status: 204, description: 'The user has been successfully deleted.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
@@ -162,7 +171,8 @@ export class UserController {
 
   @Get('list')
   @Roles(validRoles.Admin)
-  @ApiResponse({ status: 200, description: 'The users has been successfully get.' })
+  @ApiOperation({ summary: 'List all users', description: 'List all users (Admin only)' })
+  @ApiResponse({ status: 200, description: 'The users has been successfully get.', type: [User] })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
