@@ -2,15 +2,16 @@ import { Controller, Post, Get, Put, Delete, Body, Param, Res, HttpStatus } from
 import { ApiTags, ApiParam, ApiBody, ApiResponse, ApiSecurity, ApiOperation } from '@nestjs/swagger';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Response } from 'express';
-import { Connection, Schema as MongooseSchema } from 'mongoose';
+import { Connection } from 'mongoose';
 import { appConstants, validRoles } from '../../configs/app.config';
 import { swaggerConstants } from '../../configs/swagger.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 
-import { Product } from '../../models/product.model';
+import { Product as ProductInterface } from './interfaces/product.interface';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/createProduct.dto';
 import { UpdateProductDto } from './dto/updateProduct.dto';
+import { ResponseProductDto } from './dto/responseProductdto';
 import { PublicEndpoint } from '../../common/decorators/publicEndpoint.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 
@@ -29,17 +30,17 @@ export class ProductController {
     description: 'Product create data',
     type: CreateProductDto,
   })
-  @ApiResponse({ status: 201, description: 'The user has been successfully created.', type: Product })
+  @ApiResponse({ status: 201, description: 'The user has been successfully created.', type: ResponseProductDto })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 409, description: 'Product already exists.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async createProduct(@Body() createProductDto: CreateProductDto, @Res() res: Response) {
+  async createProduct(@Body() createProductDto: CreateProductDto, @Res() res: Response): Promise<Response> {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const newProduct: any = await this.productService.createProduct(createProductDto, session);
+      const newProduct: ProductInterface = await this.productService.createProduct(createProductDto);
       await session.commitTransaction();
       return res.status(HttpStatus.CREATED).send({ data: newProduct });
     } catch (error) {
@@ -57,13 +58,13 @@ export class ProductController {
     name: 'ID of Product want to get',
     type: String,
   })
-  @ApiResponse({ status: 200, description: 'The user has been successfully created.', type: Product })
+  @ApiResponse({ status: 200, description: 'The user has been successfully created.', type: ResponseProductDto })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Product with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async getProductById(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
+  async getProductById(@Param('id') id: string, @Res() res: Response): Promise<Response> {
     try {
-      const product: any = await this.productService.getProductById(id);
+      const product: ProductInterface = await this.productService.getProductById(id);
       return res.status(HttpStatus.OK).send({ data: product });
     } catch (error) {
       errorHandlingException(logLabel, error, true, error.status);
@@ -81,17 +82,17 @@ export class ProductController {
     description: 'Product update data',
     type: UpdateProductDto,
   })
-  @ApiResponse({ status: 200, description: 'The user has been successfully updated.', type: Product })
+  @ApiResponse({ status: 200, description: 'The user has been successfully updated.', type: ResponseProductDto })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 404, description: 'Product with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async updateProduct(@Param('id') id: MongooseSchema.Types.ObjectId, @Body() updateProductDto: UpdateProductDto, @Res() res: Response) {
+  async updateProduct(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto, @Res() res: Response): Promise<Response> {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const product: any = await this.productService.updateProduct(id, updateProductDto, session);
+      const product: ProductInterface = await this.productService.updateProduct(id, updateProductDto, session);
       await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: product });
     } catch (error) {
@@ -114,11 +115,11 @@ export class ProductController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 404, description: 'Product with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async deleteProduct(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
+  async deleteProduct(@Param('id') id: string, @Res() res: Response): Promise<Response> {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      await this.productService.deleteProduct(id, session);
+      await this.productService.deleteProduct(id);
       await session.commitTransaction();
       return res.status(HttpStatus.NO_CONTENT).send({});
     } catch (error) {
@@ -132,11 +133,11 @@ export class ProductController {
   @Get('list')
   @PublicEndpoint()
   @ApiOperation({ summary: 'List all products', description: 'List all products' })
-  @ApiResponse({ status: 200, description: 'The products has been successfully get.', type: [Product] })
+  @ApiResponse({ status: 200, description: 'The products has been successfully get.', type: [ResponseProductDto] })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async listProducts(@Res() res: Response) {
+  async listProducts(@Res() res: Response): Promise<Response> {
     try {
-      const products: any = await this.productService.listProducts();
+      const products: ProductInterface[] = await this.productService.listProducts();
       return res.status(HttpStatus.OK).send({ data: products });
     } catch (error) {
       errorHandlingException(logLabel, error, true, error.status);

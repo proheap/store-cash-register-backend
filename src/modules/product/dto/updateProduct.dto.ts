@@ -18,7 +18,7 @@ export class UpdateProductDto {
     description: 'Description of the Product',
     required: false,
   })
-  description: string;
+  description?: string;
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
