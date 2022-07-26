@@ -55,35 +55,36 @@ export class ProductService {
     if (!ObjectId.isValid(id)) {
       errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of product is not valid');
     }
-    let product = await this.db.collection(this.collectionName).findOne({ _id: new ObjectId(id) });
-    if (!product) {
+    const oldProduct = await this.db.collection(this.collectionName).findOne({ _id: new ObjectId(id) });
+    if (!oldProduct) {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'Product with ID not found');
     }
-    const oldPrice = product.price;
+    let updatedProduct: ProductInterface;
     try {
-      await this.db.collection(this.collectionName).updateOne(
-        { _id: new ObjectId(id) },
-        {
-          $set: {
-            ...updateProductDto,
+      updatedProduct = (
+        await this.db.collection(this.collectionName).findOneAndUpdate(
+          { _id: new ObjectId(id) },
+          {
+            $set: {
+              ...updateProductDto,
+            },
           },
-        },
-      );
+        )
+      ).value;
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    product = await this.db.collection(this.collectionName).findOne({ _id: new ObjectId(id) });
-    await this.updateCartPrices(id, updateProductDto.price, oldPrice, session);
-    return product;
+    await this.updateCartPrices(id, updateProductDto.price, oldProduct.price, session);
+    return updatedProduct;
   }
 
   async deleteProduct(id: string): Promise<boolean> {
     if (!ObjectId.isValid(id)) {
       errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of product is not valid');
     }
-    let product: any;
+    let product: ProductInterface;
     try {
-      product = await this.db.collection(this.collectionName).deleteOne({ _id: new ObjectId(id) });
+      product = await this.db.collection(this.collectionName).findOneAndDelete({ _id: new ObjectId(id) });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }

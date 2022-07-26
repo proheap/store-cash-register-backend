@@ -31,19 +31,9 @@ export class AuthService {
     const cart = new this.orderModel();
     cart.save({ session });
     newUser = new this.userModel({
-      username: registerDto.username,
-      email: registerDto.email,
       hashPassword: hash,
-      roles: registerDto.roles,
-      firstName: registerDto.firstName,
-      lastName: registerDto.lastName,
-      contactNumber: registerDto.contactNumber,
-      'address.city': registerDto.city,
-      'address.street': registerDto.street,
-      'address.apartment': registerDto.apartment,
-      'address.postalCode': registerDto.postalCode,
-      'address.country': registerDto.country,
       cart: cart._id,
+      ...registerDto,
     });
     try {
       const tokens = await this.getTokens(newUser);
