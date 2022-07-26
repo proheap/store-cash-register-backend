@@ -1,7 +1,6 @@
 import { Injectable, Inject, HttpStatus } from '@nestjs/common';
-import { ClientSession } from 'mongoose';
 import { Db, ObjectId } from 'mongodb';
-import { dbProvideName } from '../../configs/database.config';
+import { dbProvideName, dbCollections } from '../../configs/database.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 import { hashData, hashCompare } from '../../helpers/hash.helper';
 
@@ -13,17 +12,17 @@ const logLabel = 'USER-SERVICE';
 
 @Injectable()
 export class UserService {
-  private readonly collectionName = 'users';
+  private readonly userCollection = dbCollections.user;
 
   constructor(@Inject(dbProvideName) private db: Db) {}
 
   async getUserById(id: string): Promise<UserInterface> {
     if (!ObjectId.isValid(id)) {
-      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of product is not valid');
+      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of user is not valid');
     }
     let user: UserInterface;
     try {
-      user = await this.db.collection(this.collectionName).findOne({ _id: new ObjectId(id) });
+      user = await this.db.collection(this.userCollection).findOne({ _id: new ObjectId(id) });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -35,19 +34,20 @@ export class UserService {
 
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<UserInterface> {
     if (!ObjectId.isValid(id)) {
-      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of product is not valid');
+      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of user is not valid');
     }
     let user: UserInterface;
     try {
-      await this.db.collection(this.collectionName).updateOne(
-        { _id: new ObjectId(id) },
-        {
-          $set: {
-            ...updateUserDto,
+      user = (
+        await this.db.collection(this.userCollection).findOneAndUpdate(
+          { _id: new ObjectId(id) },
+          {
+            $set: {
+              ...updateUserDto,
+            },
           },
-        },
-      );
-      user = await this.db.collection(this.collectionName).findOne({ _id: new ObjectId(id) });
+        )
+      ).value;
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -59,11 +59,11 @@ export class UserService {
 
   async changePassword(id: string, changePasswordDto: ChangePasswordDto): Promise<UserInterface> {
     if (!ObjectId.isValid(id)) {
-      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of product is not valid');
+      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of user is not valid');
     }
     let user: UserInterface;
     try {
-      user = await this.db.collection(this.collectionName).findOne({ _id: new ObjectId(id) });
+      user = await this.db.collection(this.userCollection).findOne({ _id: new ObjectId(id) });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -77,7 +77,7 @@ export class UserService {
     const hash = await hashData(changePasswordDto.newPassword);
     try {
       user = (
-        await this.db.collection(this.collectionName).findOneAndUpdate(
+        await this.db.collection(this.userCollection).findOneAndUpdate(
           { _id: new ObjectId(id) },
           {
             $set: {
@@ -94,11 +94,11 @@ export class UserService {
 
   async deleteUser(id: string): Promise<boolean> {
     if (!ObjectId.isValid(id)) {
-      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of product is not valid');
+      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of user is not valid');
     }
     let user: UserInterface;
     try {
-      user = (await this.db.collection(this.collectionName).findOneAndDelete({ _id: new ObjectId(id) })).value;
+      user = (await this.db.collection(this.userCollection).findOneAndDelete({ _id: new ObjectId(id) })).value;
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -111,7 +111,7 @@ export class UserService {
   async listUsers(): Promise<UserInterface[]> {
     let users: UserInterface[];
     try {
-      users = await this.db.collection(this.collectionName).find().toArray();
+      users = await this.db.collection(this.userCollection).find().toArray();
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }

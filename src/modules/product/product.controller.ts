@@ -92,7 +92,7 @@ export class ProductController {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const product: ProductInterface = await this.productService.updateProduct(id, updateProductDto, session);
+      const product: ProductInterface = await this.productService.updateProduct(id, updateProductDto);
       await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: product });
     } catch (error) {

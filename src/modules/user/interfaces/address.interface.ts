@@ -1,6 +1,6 @@
-import { Document } from 'mongoose';
+import { Document } from 'mongodb';
 
-export class Address extends Document {
+export interface Address extends Document {
   city?: string;
   street?: string;
   apartment?: string;

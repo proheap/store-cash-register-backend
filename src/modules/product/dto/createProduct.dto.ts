@@ -24,7 +24,7 @@ export class CreateProductDto {
   @Min(0)
   @IsNotEmpty()
   @ApiProperty({
-    type: 'number',
+    type: Number,
     description: 'Price of the Product',
     required: true,
   })
@@ -34,7 +34,7 @@ export class CreateProductDto {
   @Min(0)
   @IsNotEmpty()
   @ApiProperty({
-    type: 'number',
+    type: Number,
     description: 'Quantity of the Product',
     required: true,
   })

@@ -2,7 +2,7 @@ import { Controller, Post, Get, Put, Delete, Body, Param, Res, HttpStatus } from
 import { ApiTags, ApiParam, ApiBody, ApiResponse, ApiSecurity, ApiOperation } from '@nestjs/swagger';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Response } from 'express';
-import { Connection, Schema as MongooseSchema } from 'mongoose';
+import { Connection } from 'mongoose';
 import { appConstants } from '../../configs/app.config';
 import { swaggerConstants } from '../../configs/swagger.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
@@ -38,16 +38,11 @@ export class CartController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Product with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async addProductToCart(
-    @GetCurrentUserId() userId: MongooseSchema.Types.ObjectId,
-    @Param('id') productId: MongooseSchema.Types.ObjectId,
-    @Body('quantity') quantity: number,
-    @Res() res: Response,
-  ) {
+  async addProductToCart(@GetCurrentUserId() userId: string, @Param('id') productId: string, @Body('quantity') quantity: number, @Res() res: Response) {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const cart: any = await this.cartService.addProductToCart(userId, productId, quantity, session);
+      const cart: any = await this.cartService.addProductToCart(userId, productId, quantity);
       await session.commitTransaction();
       return res.status(HttpStatus.CREATED).send({ data: cart });
     } catch (error) {
@@ -77,16 +72,11 @@ export class CartController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Product with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async updateProductInCart(
-    @GetCurrentUserId() userId: MongooseSchema.Types.ObjectId,
-    @Param('id') productId: MongooseSchema.Types.ObjectId,
-    @Body('quantity') quantity: number,
-    @Res() res: Response,
-  ) {
+  async updateProductInCart(@GetCurrentUserId() userId: string, @Param('id') productId: string, @Body('quantity') quantity: number, @Res() res: Response) {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const cart: any = await this.cartService.updateProductFromCart(userId, productId, quantity, session);
+      const cart: any = await this.cartService.updateProductFromCart(userId, productId, quantity);
       await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: cart });
     } catch (error) {
@@ -107,15 +97,11 @@ export class CartController {
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'Product with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async removeProductsFromCart(
-    @GetCurrentUserId() userId: MongooseSchema.Types.ObjectId,
-    @Param('id') productId: MongooseSchema.Types.ObjectId,
-    @Res() res: Response,
-  ) {
+  async removeProductsFromCart(@GetCurrentUserId() userId: string, @Param('id') productId: string, @Res() res: Response) {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      await this.cartService.removeProductFromCart(userId, productId, session);
+      await this.cartService.removeProductFromCart(userId, productId);
       await session.commitTransaction();
       return res.status(HttpStatus.NO_CONTENT).send({});
     } catch (error) {
@@ -131,7 +117,7 @@ export class CartController {
   @ApiResponse({ status: 200, description: 'The cart has been successfully get.', type: Order })
   @ApiResponse({ status: 404, description: 'User with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async listProductsInCart(@GetCurrentUserId() userId: MongooseSchema.Types.ObjectId, @Res() res: Response) {
+  async listProductsInCart(@GetCurrentUserId() userId: string, @Res() res: Response) {
     try {
       const cart: any = await this.cartService.listProductsInCart(userId);
       return res.status(HttpStatus.OK).send({ data: cart });
@@ -156,11 +142,11 @@ export class CartController {
   @ApiResponse({ status: 404, description: 'User not found.' })
   @ApiResponse({ status: 422, description: 'Insufficient funds.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async payProductsInCart(@GetCurrentUserId() userId: MongooseSchema.Types.ObjectId, @Body('money') money: number, @Res() res: Response) {
+  async payProductsInCart(@GetCurrentUserId() userId: string, @Body('money') money: number, @Res() res: Response) {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const order: any = await this.cartService.payProductsInCart(userId, money, session);
+      const order: any = await this.cartService.payProductsInCart(userId, money);
       await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: order });
     } catch (error) {
