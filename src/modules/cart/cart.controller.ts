@@ -7,7 +7,7 @@ import { appConstants } from '../../configs/app.config';
 import { swaggerConstants } from '../../configs/swagger.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 
-import { Order } from 'src/models/order.model';
+import { Order } from '../../models/order.model';
 import { CartService } from './cart.service';
 import { GetCurrentUserId } from '../../common/decorators/getCurrentUserId.decorator';
 

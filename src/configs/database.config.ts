@@ -9,3 +9,9 @@ export const dbCollections = {
   product: 'products',
   order: 'orders',
 };
+
+export const initOrderData = {
+  orderItems: [],
+  totalPrice: 0,
+  archived: false,
+};

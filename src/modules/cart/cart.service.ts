@@ -1,6 +1,6 @@
 import { Injectable, Inject, HttpStatus } from '@nestjs/common';
 import { Db, ObjectId } from 'mongodb';
-import { dbProvideName, dbCollections } from '../../configs/database.config';
+import { dbProvideName, dbCollections, initOrderData } from '../../configs/database.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 
 import { User as UserInterface } from '../user/interfaces/user.interface';
@@ -16,11 +16,7 @@ export class CartService {
   private readonly userCollection = dbCollections.user;
   private readonly productCollection = dbCollections.product;
   private readonly orderCollection = dbCollections.order;
-  private readonly initCartDto = {
-    orderItems: [],
-    totalPrice: 0,
-    archived: false,
-  };
+  private readonly initCartData = initOrderData;
 
   constructor(@Inject(dbProvideName) private db: Db) {}
 
@@ -84,7 +80,7 @@ export class CartService {
     }
     try {
       cart = await this.db.collection(this.orderCollection).findOne({ _id: new ObjectId(user.cart), archived: false });
-      cartItem = await cart.orderItems.find((cartItem: OrderItemInterface) => cartItem.product == productId);
+      cartItem = cart.orderItems.find((cartItem: OrderItemInterface) => cartItem.product == productId);
       product = await this.db.collection(this.productCollection).findOne({ _id: new ObjectId(productId) });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -194,7 +190,8 @@ export class CartService {
 
   async archiveOrder(userId: ObjectId, orderId: ObjectId): Promise<boolean> {
     try {
-      const cartId = (await this.db.collection(this.orderCollection).insertOne(this.initCartDto)).insertedId;
+      const cartId = (await this.db.collection(this.orderCollection).insertOne({ ...this.initCartData })).insertedId;
+
       await this.db.collection(this.orderCollection).updateOne(
         { _id: orderId },
         {

@@ -4,9 +4,10 @@ import { dbProvideName, dbCollections } from '../../configs/database.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 import { hashData, hashCompare } from '../../helpers/hash.helper';
 
-import { User as UserInterface } from './interfaces/user.interface';
+import { User as UserInterface, SecuredUser } from './interfaces/user.interface';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
+import { plainToClass, plainToInstance } from 'class-transformer';
 
 const logLabel = 'USER-SERVICE';
 
@@ -16,7 +17,7 @@ export class UserService {
 
   constructor(@Inject(dbProvideName) private db: Db) {}
 
-  async getUserById(id: string): Promise<UserInterface> {
+  async getUserById(id: string): Promise<SecuredUser> {
     if (!ObjectId.isValid(id)) {
       errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of user is not valid');
     }
@@ -29,10 +30,10 @@ export class UserService {
     if (!user) {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
-    return user;
+    return plainToInstance(SecuredUser, user);
   }
 
-  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<UserInterface> {
+  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<SecuredUser> {
     if (!ObjectId.isValid(id)) {
       errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of user is not valid');
     }
@@ -54,10 +55,10 @@ export class UserService {
     if (!user) {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
-    return user;
+    return plainToInstance(SecuredUser, user);
   }
 
-  async changePassword(id: string, changePasswordDto: ChangePasswordDto): Promise<UserInterface> {
+  async changePassword(id: string, changePasswordDto: ChangePasswordDto): Promise<SecuredUser> {
     if (!ObjectId.isValid(id)) {
       errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of user is not valid');
     }
@@ -89,7 +90,7 @@ export class UserService {
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return user;
+    return plainToInstance(SecuredUser, user);
   }
 
   async deleteUser(id: string): Promise<boolean> {
@@ -108,13 +109,13 @@ export class UserService {
     return true;
   }
 
-  async listUsers(): Promise<UserInterface[]> {
+  async listUsers(): Promise<SecuredUser[]> {
     let users: UserInterface[];
     try {
       users = await this.db.collection(this.userCollection).find().toArray();
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return users;
+    return users.map(user => plainToInstance(SecuredUser, user));
   }
 }

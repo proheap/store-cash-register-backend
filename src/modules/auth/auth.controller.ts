@@ -2,15 +2,16 @@ import { Controller, Post, Body, Res, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiBody, ApiResponse, ApiSecurity, ApiOperation } from '@nestjs/swagger';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Response } from 'express';
-import { Connection, Schema as MongooseSchema } from 'mongoose';
+import { Connection } from 'mongoose';
 import { appConstants } from '../../configs/app.config';
 import { swaggerConstants } from '../../configs/swagger.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 
-import { User } from '../../models/user.model';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ResponseLoginDto } from './dto/responseLogin.dto';
+import { ResponseUserDto } from '../user/dto/responseUser.dto';
 import { PublicEndpoint } from '../../common/decorators/publicEndpoint.decorator';
 import { GetCurrentUserId } from '../../common/decorators/getCurrentUserId.decorator';
 
@@ -28,15 +29,15 @@ export class AuthController {
     description: 'User register data',
     type: RegisterDto,
   })
-  @ApiResponse({ status: 201, description: 'The user has been successfully created.', type: User })
+  @ApiResponse({ status: 201, description: 'The user has been successfully created.', type: ResponseUserDto })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiResponse({ status: 409, description: 'User already exists.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async register(@Body() registerDto: RegisterDto, @Res() res: Response) {
+  async register(@Body() registerDto: RegisterDto, @Res() res: Response): Promise<Response> {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const newUser: any = await this.authService.registerUser(registerDto, session);
+      const newUser: any = await this.authService.registerUser(registerDto);
       await session.commitTransaction();
       return res.status(HttpStatus.CREATED).send({ data: newUser });
     } catch (error) {
@@ -54,15 +55,15 @@ export class AuthController {
     description: 'User login data',
     type: LoginDto,
   })
-  @ApiResponse({ status: 200, description: 'The user has been successfully logged in.', type: User })
+  @ApiResponse({ status: 200, description: 'The user has been successfully logged in.', type: ResponseLoginDto })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiResponse({ status: 403, description: 'Access denied.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async login(@Body() loginDto: LoginDto, @Res() res: Response) {
+  async login(@Body() loginDto: LoginDto, @Res() res: Response): Promise<Response> {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const user: any = await this.authService.loginUser(loginDto, session);
+      const user: any = await this.authService.loginUser(loginDto);
       await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
@@ -78,11 +79,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout user', description: 'Logout user' })
   @ApiResponse({ status: 200, description: 'The user has been successfully logged out.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async logout(@GetCurrentUserId() userId: MongooseSchema.Types.ObjectId, @Res() res: Response) {
+  async logout(@GetCurrentUserId() userId: string, @Res() res: Response): Promise<Response> {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      await this.authService.logoutUser(userId, session);
+      await this.authService.logoutUser(userId);
       await session.commitTransaction();
       return res.status(HttpStatus.OK).send({});
     } catch (error) {

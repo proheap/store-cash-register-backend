@@ -7,7 +7,7 @@ import { appConstants, validRoles } from '../../configs/app.config';
 import { swaggerConstants } from '../../configs/swagger.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 
-import { User as UserInterface } from './interfaces/user.interface';
+import { SecuredUser } from './interfaces/user.interface';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
@@ -31,7 +31,7 @@ export class UserController {
   @ApiResponse({ status: 500, description: 'Internal server error.' })
   async getLoggedUser(@GetCurrentUserId() id: string, @Res() res: Response): Promise<Response> {
     try {
-      const user: UserInterface = await this.userService.getUserById(id);
+      const user: SecuredUser = await this.userService.getUserById(id);
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
       errorHandlingException(logLabel, error, true, error.status);
@@ -53,7 +53,7 @@ export class UserController {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const user: UserInterface = await this.userService.updateUser(id, updateUserDto);
+      const user: SecuredUser = await this.userService.updateUser(id, updateUserDto);
       await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
@@ -79,7 +79,7 @@ export class UserController {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const user: UserInterface = await this.userService.changePassword(id, changePasswordDto);
+      const user: SecuredUser = await this.userService.changePassword(id, changePasswordDto);
       await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
@@ -104,7 +104,7 @@ export class UserController {
   @ApiResponse({ status: 500, description: 'Internal server error.' })
   async getUserById(@Param('id') id: string, @Res() res: Response) {
     try {
-      const user: UserInterface = await this.userService.getUserById(id);
+      const user: SecuredUser = await this.userService.getUserById(id);
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
       errorHandlingException(logLabel, error, true, error.status);
@@ -132,7 +132,7 @@ export class UserController {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const user: UserInterface = await this.userService.updateUser(id, updateUserDto);
+      const user: SecuredUser = await this.userService.updateUser(id, updateUserDto);
       await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
@@ -179,7 +179,7 @@ export class UserController {
   @ApiResponse({ status: 500, description: 'Internal server error.' })
   async listUsers(@Res() res: Response) {
     try {
-      const users: UserInterface[] = await this.userService.listUsers();
+      const users: SecuredUser[] = await this.userService.listUsers();
       return res.status(HttpStatus.OK).send({ data: users });
     } catch (error) {
       errorHandlingException(logLabel, error, true, error.status);
