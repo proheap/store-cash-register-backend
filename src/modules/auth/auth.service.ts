@@ -1,67 +1,60 @@
-import { Injectable, HttpStatus } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { Injectable, Inject, HttpStatus } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ClientSession, Model, Schema as MongooseSchema } from 'mongoose';
+import { Db, ObjectId } from 'mongodb';
 import { appConstants } from '../../configs/app.config';
+import { dbProvideName, dbCollections, initOrderData } from '../../configs/database.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 import { hashData, hashCompare } from '../../helpers/hash.helper';
 
-import { User } from '../../models/user.model';
-import { Order } from '../../models/order.model';
+import { SecuredUser, User as UserInterface } from '../user/interfaces/user.interface';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { UserTokenDto } from './dto/userToken.dto';
 import { JwtPayload } from './types/jwtPayload.type';
+import { plainToInstance } from 'class-transformer';
 
 const logLabel = 'AUTH-SERVICE';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    @InjectModel(User.name) private readonly userModel: Model<User>,
-    @InjectModel(Order.name) private readonly orderModel: Model<Order>,
-    private jwtService: JwtService,
-  ) {}
+  private readonly userCollection = dbCollections.user;
+  private readonly orderCollection = dbCollections.order;
+  private readonly initCartData = initOrderData;
 
-  async registerUser(registerDto: RegisterDto, session: ClientSession) {
-    let newUser = await this.getUserByEmail(registerDto.email);
+  constructor(@Inject(dbProvideName) private db: Db, private jwtService: JwtService) {}
+
+  async registerUser(registerDto: RegisterDto): Promise<UserInterface> {
+    let newUser: UserInterface;
+    newUser = await this.getUserByEmail(registerDto.email);
     if (newUser) {
       errorHandlingException(logLabel, null, true, HttpStatus.CONFLICT, 'User already exists');
     }
     const hash = await hashData(registerDto.password);
-    const cart = new this.orderModel();
-    cart.save({ session });
-    newUser = new this.userModel({
-      username: registerDto.username,
-      email: registerDto.email,
-      hashPassword: hash,
-      roles: registerDto.roles,
-      firstName: registerDto.firstName,
-      lastName: registerDto.lastName,
-      contactNumber: registerDto.contactNumber,
-      'address.city': registerDto.city,
-      'address.street': registerDto.street,
-      'address.apartment': registerDto.apartment,
-      'address.postalCode': registerDto.postalCode,
-      'address.country': registerDto.country,
-      cart: cart._id,
-    });
+    delete registerDto.password;
+    const cartId = (await this.db.collection(this.orderCollection).insertOne({ ...this.initCartData })).insertedId;
+    const newUserId = (
+      await this.db.collection(this.userCollection).insertOne({
+        hashPassword: hash,
+        cart: cartId.toHexString(),
+        ...registerDto,
+      })
+    ).insertedId;
     try {
+      newUser = await this.db.collection(this.userCollection).findOne({ _id: newUserId });
       const tokens = await this.getTokens(newUser);
-      newUser = await this.updateRefreshToken(newUser, tokens.refreshToken);
-      await newUser.save({ session });
-      newUser = await this.secureUserData(newUser);
+      newUser = await this.updateRefreshToken(newUser._id, tokens.refreshToken);
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!newUser) {
       errorHandlingException(logLabel, null, true, HttpStatus.CONFLICT, 'User not created');
     }
-    return newUser;
+    return plainToInstance(SecuredUser, newUser);
   }
 
-  async loginUser(loginDto: LoginDto, session: ClientSession) {
-    let user: any, tokens: any;
-    user = await this.userModel.findOne({ username: loginDto.username });
+  async loginUser(loginDto: LoginDto): Promise<UserTokenDto> {
+    let user: UserInterface, tokens: any;
+    user = await this.db.collection(this.userCollection).findOne({ username: loginDto.username });
     if (!user) {
       errorHandlingException(logLabel, null, true, HttpStatus.FORBIDDEN, 'Access denied');
     }
@@ -71,26 +64,37 @@ export class AuthService {
     }
     try {
       tokens = await this.getTokens(user);
-      user = await this.updateRefreshToken(user, tokens.refreshToken);
-      await user.save({ session });
-      user = await this.secureUserData(user);
+      user = await this.updateRefreshToken(user._id, tokens.refreshToken);
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return { user: user, accessToken: tokens.accessToken };
+    return { user: plainToInstance(SecuredUser, user), accessToken: tokens.accessToken };
   }
 
-  async logoutUser(userId: MongooseSchema.Types.ObjectId, session: ClientSession) {
+  async logoutUser(userId: string) {
+    if (!ObjectId.isValid(userId)) {
+      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of user is not valid');
+    }
     try {
-      await this.userModel.updateMany({ _id: userId, hashToken: { $ne: null } }, { hashToken: null }).session(session);
+      await this.db.collection(this.userCollection).updateOne(
+        {
+          _id: new ObjectId(userId),
+          hashToken: { $ne: null },
+        },
+        {
+          $set: {
+            hashToken: null,
+          },
+        },
+      );
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async getTokens(user: any) {
+  async getTokens(user: UserInterface) {
     const jwtPayload: JwtPayload = {
-      sub: user._id,
+      sub: user._id.toHexString(),
       email: user.email,
       roles: user.roles,
     };
@@ -110,35 +114,39 @@ export class AuthService {
     };
   }
 
-  async updateRefreshToken(user: any, refreshToken: string) {
+  async updateRefreshToken(userId: ObjectId, refreshToken: string): Promise<UserInterface> {
     const hash = await hashData(refreshToken);
-    user.hashToken = hash;
+    const user = (
+      await this.db.collection(this.userCollection).findOneAndUpdate(
+        { _id: userId },
+        {
+          $set: {
+            hashToken: hash,
+          },
+        },
+        { returnDocument: 'after' },
+      )
+    ).value;
     return user;
   }
 
-  async getUserByEmail(email: string) {
+  async getUserByEmail(email: string): Promise<UserInterface> {
     let user: any;
     try {
-      user = await this.userModel.findOne({ email: email });
+      user = await this.db.collection(this.userCollection).findOne({ email: email });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return user;
   }
 
-  async getUserByUsername(username: string) {
+  async getUserByUsername(username: string): Promise<UserInterface> {
     let user: any;
     try {
-      user = await this.userModel.findOne({ username: username });
+      user = await this.db.collection(this.userCollection).findOne({ username: username });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return user;
-  }
-
-  async secureUserData(user: any) {
-    user.hashPassword = undefined;
-    user.hashToken = undefined;
     return user;
   }
 }

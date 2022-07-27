@@ -18,13 +18,13 @@ export class UpdateProductDto {
     description: 'Description of the Product',
     required: false,
   })
-  description: string;
+  description?: string;
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @Min(0)
   @IsNotEmpty()
   @ApiProperty({
-    type: 'number',
+    type: Number,
     description: 'Price of the Product',
     required: true,
   })
@@ -34,7 +34,7 @@ export class UpdateProductDto {
   @Min(0)
   @IsNotEmpty()
   @ApiProperty({
-    type: 'number',
+    type: Number,
     description: 'Quantity of the Product',
     required: true,
   })
