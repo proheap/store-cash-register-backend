@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document } from 'mongoose';
 import { validRoles } from '../configs/app.config';
 import { Address } from './address.model';
 
@@ -85,21 +85,21 @@ export class User extends Document {
   })
   address: Address;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
+  @Prop({ required: true })
   @ApiProperty({
     type: String,
     description: 'ID of Cart of the User',
     required: true,
   })
-  cart: MongooseSchema.Types.ObjectId;
+  cart: string;
 
-  @Prop({ type: [MongooseSchema.Types.ObjectId], required: false, default: [] })
+  @Prop({ required: false, default: [] })
   @ApiProperty({
     type: String,
     description: 'Array of Orders IDs of the User',
     required: false,
   })
-  orders: [MongooseSchema.Types.ObjectId];
+  orders: [string];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

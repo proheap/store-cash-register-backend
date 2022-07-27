@@ -2,15 +2,16 @@ import { Controller, Get, Put, Delete, Body, Param, Res, HttpStatus } from '@nes
 import { ApiTags, ApiParam, ApiBody, ApiResponse, ApiSecurity, ApiOperation } from '@nestjs/swagger';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Response } from 'express';
-import { Connection, Schema as MongooseSchema } from 'mongoose';
+import { Connection } from 'mongoose';
 import { appConstants, validRoles } from '../../configs/app.config';
 import { swaggerConstants } from '../../configs/swagger.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 
-import { User } from '../../models/user.model';
+import { SecuredUser } from './interfaces/user.interface';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
+import { ResponseUserDto } from './dto/responseUser.dto';
 import { GetCurrentUserId } from '../../common/decorators/getCurrentUserId.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 
@@ -24,13 +25,13 @@ export class UserController {
 
   @Get()
   @ApiOperation({ summary: 'Get logged user', description: 'Get logged user' })
-  @ApiResponse({ status: 200, description: 'The user has been successfully get.', type: User })
+  @ApiResponse({ status: 200, description: 'The user has been successfully get.', type: ResponseUserDto })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'User with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async getLoggedUser(@GetCurrentUserId() id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
+  async getLoggedUser(@GetCurrentUserId() id: string, @Res() res: Response): Promise<Response> {
     try {
-      const user: any = await this.userService.getUserById(id);
+      const user: SecuredUser = await this.userService.getUserById(id);
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
       errorHandlingException(logLabel, error, true, error.status);
@@ -43,16 +44,16 @@ export class UserController {
     description: 'User update data',
     type: UpdateUserDto,
   })
-  @ApiResponse({ status: 200, description: 'The user has been successfully updated.', type: User })
+  @ApiResponse({ status: 200, description: 'The user has been successfully updated.', type: ResponseUserDto })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'User with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async updateLoggedUser(@GetCurrentUserId() id: MongooseSchema.Types.ObjectId, @Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
+  async updateLoggedUser(@GetCurrentUserId() id: string, @Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const user: any = await this.userService.updateUser(id, updateUserDto, session);
+      const user: SecuredUser = await this.userService.updateUser(id, updateUserDto);
       await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
@@ -69,16 +70,16 @@ export class UserController {
     description: 'User passwords data',
     type: ChangePasswordDto,
   })
-  @ApiResponse({ status: 200, description: 'The password has been successfully changed.', type: User })
+  @ApiResponse({ status: 200, description: 'The password has been successfully changed.', type: ResponseUserDto })
   @ApiResponse({ status: 400, description: 'Old password is not valid.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 404, description: 'User with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async changePassword(@GetCurrentUserId() id: MongooseSchema.Types.ObjectId, @Body() changePasswordDto: ChangePasswordDto, @Res() res: Response) {
+  async changePassword(@GetCurrentUserId() id: string, @Body() changePasswordDto: ChangePasswordDto, @Res() res: Response) {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const user: any = await this.userService.changePassword(id, changePasswordDto, session);
+      const user: SecuredUser = await this.userService.changePassword(id, changePasswordDto);
       await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
@@ -96,14 +97,14 @@ export class UserController {
     name: 'ID of User want to get',
     type: String,
   })
-  @ApiResponse({ status: 200, description: 'The user has been successfully get.', type: User })
+  @ApiResponse({ status: 200, description: 'The user has been successfully get.', type: ResponseUserDto })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 404, description: 'User with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async getUserById(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
+  async getUserById(@Param('id') id: string, @Res() res: Response) {
     try {
-      const user: any = await this.userService.getUserById(id);
+      const user: SecuredUser = await this.userService.getUserById(id);
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
       errorHandlingException(logLabel, error, true, error.status);
@@ -121,17 +122,17 @@ export class UserController {
     description: 'User passwords data',
     type: ChangePasswordDto,
   })
-  @ApiResponse({ status: 200, description: 'The user has been successfully updated.', type: User })
+  @ApiResponse({ status: 200, description: 'The user has been successfully updated.', type: ResponseUserDto })
   @ApiResponse({ status: 400, description: 'Bad request.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 404, description: 'User with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async updateUser(@Param('id') id: MongooseSchema.Types.ObjectId, @Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
+  async updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto, @Res() res: Response) {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const user: any = await this.userService.updateUser(id, updateUserDto, session);
+      const user: SecuredUser = await this.userService.updateUser(id, updateUserDto);
       await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {
@@ -154,13 +155,13 @@ export class UserController {
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 404, description: 'User with ID not found.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async deleteUser(@Param('id') id: MongooseSchema.Types.ObjectId, @Res() res: Response) {
+  async deleteUser(@Param('id') id: string, @Res() res: Response) {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const user: any = await this.userService.deleteUser(id, session);
+      await this.userService.deleteUser(id);
       await session.commitTransaction();
-      return res.status(HttpStatus.NO_CONTENT).send(user);
+      return res.status(HttpStatus.NO_CONTENT).send({});
     } catch (error) {
       await session.abortTransaction();
       errorHandlingException(logLabel, error, true, error.status);
@@ -172,13 +173,13 @@ export class UserController {
   @Get('list')
   @Roles(validRoles.Admin)
   @ApiOperation({ summary: 'List all users', description: 'List all users (Admin only)' })
-  @ApiResponse({ status: 200, description: 'The users has been successfully get.', type: [User] })
+  @ApiResponse({ status: 200, description: 'The users has been successfully get.', type: [ResponseUserDto] })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
   async listUsers(@Res() res: Response) {
     try {
-      const users: any = await this.userService.listUsers();
+      const users: SecuredUser[] = await this.userService.listUsers();
       return res.status(HttpStatus.OK).send({ data: users });
     } catch (error) {
       errorHandlingException(logLabel, error, true, error.status);

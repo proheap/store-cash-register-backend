@@ -1,16 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document } from 'mongoose';
 
 @Schema({ timestamps: true })
 export class OrderItem extends Document {
-  @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
+  @Prop({ required: true })
   @ApiProperty({
     type: String,
     description: 'ID of ordered Product',
     required: true,
   })
-  product: MongooseSchema.Types.ObjectId;
+  product: string;
 
   @Prop({ required: true, min: 0 })
   @ApiProperty({

@@ -1,59 +1,70 @@
-import { Injectable, HttpStatus } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { ClientSession, Model, Schema as MongooseSchema } from 'mongoose';
+import { Injectable, Inject, HttpStatus } from '@nestjs/common';
+import { Db, ObjectId } from 'mongodb';
+import { dbProvideName, dbCollections } from '../../configs/database.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 import { hashData, hashCompare } from '../../helpers/hash.helper';
 
-import { User } from '../../models/user.model';
+import { User as UserInterface, SecuredUser } from './interfaces/user.interface';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
+import { plainToInstance } from 'class-transformer';
 
 const logLabel = 'USER-SERVICE';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {}
+  private readonly userCollection = dbCollections.user;
 
-  async getUserById(id: MongooseSchema.Types.ObjectId) {
-    let user: any;
+  constructor(@Inject(dbProvideName) private db: Db) {}
+
+  async getUserById(id: string): Promise<SecuredUser> {
+    if (!ObjectId.isValid(id)) {
+      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of user is not valid');
+    }
+    let user: UserInterface;
     try {
-      user = await this.userModel.findById(id).select('-hashPassword -hashToken').exec();
+      user = await this.db.collection(this.userCollection).findOne({ _id: new ObjectId(id) });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!user) {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
-    return user;
+    return plainToInstance(SecuredUser, user);
   }
 
-  async updateUser(id: MongooseSchema.Types.ObjectId, updateUserDto: UpdateUserDto, session: ClientSession) {
-    let user: any;
+  async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<SecuredUser> {
+    if (!ObjectId.isValid(id)) {
+      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of user is not valid');
+    }
+    let user: UserInterface;
     try {
-      user = await this.userModel.findById(id).select('-hashPassword -hashToken').exec();
-      user.roles = updateUserDto.roles;
-      user.firstName = updateUserDto.firstName;
-      user.lastName = updateUserDto.lastName;
-      user.contactNumber = updateUserDto.contactNumber;
-      user.address.city = updateUserDto.city;
-      user.address.street = updateUserDto.street;
-      user.address.apartment = updateUserDto.apartment;
-      user.address.postalCode = updateUserDto.postalCode;
-      user.address.country = updateUserDto.country;
-      user = await user.save({ session });
+      user = (
+        await this.db.collection(this.userCollection).findOneAndUpdate(
+          { _id: new ObjectId(id) },
+          {
+            $set: {
+              ...updateUserDto,
+            },
+          },
+        )
+      ).value;
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!user) {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
-    return user;
+    return plainToInstance(SecuredUser, user);
   }
 
-  async changePassword(id: MongooseSchema.Types.ObjectId, changePasswordDto: ChangePasswordDto, session: ClientSession) {
-    let user: any;
+  async changePassword(id: string, changePasswordDto: ChangePasswordDto): Promise<SecuredUser> {
+    if (!ObjectId.isValid(id)) {
+      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of user is not valid');
+    }
+    let user: UserInterface;
     try {
-      user = await this.userModel.findById(id);
+      user = await this.db.collection(this.userCollection).findOne({ _id: new ObjectId(id) });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -65,32 +76,46 @@ export class UserService {
       errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'Old password is not valid');
     }
     const hash = await hashData(changePasswordDto.newPassword);
-    user.hashPassword = hash;
-    await user.save({ session });
-    user = await this.userModel.findById(user.id).select('-hashPassword -hashToken').exec();
-    return user;
+    try {
+      user = (
+        await this.db.collection(this.userCollection).findOneAndUpdate(
+          { _id: new ObjectId(id) },
+          {
+            $set: {
+              hashPassword: hash,
+            },
+          },
+        )
+      ).value;
+    } catch (error) {
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return plainToInstance(SecuredUser, user);
   }
 
-  async deleteUser(id: MongooseSchema.Types.ObjectId, session: ClientSession) {
-    let user: any;
+  async deleteUser(id: string): Promise<boolean> {
+    if (!ObjectId.isValid(id)) {
+      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of user is not valid');
+    }
+    let user: UserInterface;
     try {
-      user = await this.userModel.findByIdAndDelete(id).session(session);
+      user = (await this.db.collection(this.userCollection).findOneAndDelete({ _id: new ObjectId(id) })).value;
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!user) {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
-    return user;
+    return true;
   }
 
-  async listUsers() {
-    let users = [];
+  async listUsers(): Promise<SecuredUser[]> {
+    let users: UserInterface[];
     try {
-      users = await this.userModel.find().select('-hashPassword -hashToken').exec();
+      users = await this.db.collection(this.userCollection).find().toArray();
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return users;
+    return users.map(user => plainToInstance(SecuredUser, user));
   }
 }

@@ -1,27 +1,33 @@
-import { Injectable, HttpStatus } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { ClientSession, Model, Schema as MongooseSchema } from 'mongoose';
+import { Injectable, Inject, HttpStatus } from '@nestjs/common';
+import { Db, ObjectId } from 'mongodb';
+import { dbProvideName, dbCollections, initOrderData } from '../../configs/database.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 
-import { Product } from '../../models/product.model';
-import { User } from '../../models/user.model';
-import { Order } from '../../models/order.model';
+import { User as UserInterface } from '../user/interfaces/user.interface';
+import { Product as ProductInterface } from '../product/interfaces/product.interface';
+import { Order as OrderInterface } from './interfaces/order.interface';
+import { OrderItem as OrderItemInterface } from './interfaces/orderItem.interface';
+import { PayOrderDto } from './dto/payOrder.dto';
 
 const logLabel = 'CART-SERVICE';
 
 @Injectable()
 export class CartService {
-  constructor(
-    @InjectModel(Product.name) private readonly productModel: Model<Product>,
-    @InjectModel(User.name) private readonly userModel: Model<User>,
-    @InjectModel(Order.name) private readonly orderModel: Model<Order>,
-  ) {}
+  private readonly userCollection = dbCollections.user;
+  private readonly productCollection = dbCollections.product;
+  private readonly orderCollection = dbCollections.order;
+  private readonly initCartData = initOrderData;
 
-  async addProductToCart(userId: MongooseSchema.Types.ObjectId, productId: MongooseSchema.Types.ObjectId, quantity: number, session: ClientSession) {
-    let user: any, product: any, cart: any;
+  constructor(@Inject(dbProvideName) private db: Db) {}
+
+  async addProductToCart(userId: string, productId: string, quantity: number): Promise<OrderInterface> {
+    if (!ObjectId.isValid(userId) || !ObjectId.isValid(productId)) {
+      errorHandlingException(logLabel, null, true, HttpStatus.BAD_REQUEST, 'ID of user or product is not valid');
+    }
+    let user: UserInterface, product: ProductInterface, cart: OrderInterface;
     try {
-      user = await this.userModel.findById(userId);
-      product = await this.productModel.findById(productId);
+      user = await this.db.collection(this.userCollection).findOne({ _id: new ObjectId(userId) });
+      product = await this.db.collection(this.productCollection).findOne({ _id: new ObjectId(productId) });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -32,10 +38,10 @@ export class CartService {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'Product with ID not found');
     }
     try {
-      cart = await this.orderModel.findOne({ _id: user.cart, archived: false });
-      let cartItem = await cart.orderItems.find((cartItem: any) => cartItem.product == productId);
+      cart = await this.db.collection(this.orderCollection).findOne({ _id: new ObjectId(user.cart), archived: false });
+      let cartItem = cart.orderItems.find((cartItem: OrderItemInterface) => cartItem.product == productId);
       if (cartItem) {
-        cart.orderItems = cart.orderItems.filter((cartItem: any) => cartItem.product != productId);
+        cart.orderItems = cart.orderItems.filter((cartItem: OrderItemInterface) => cartItem.product != productId);
         cartItem.quantity += quantity;
       } else {
         cartItem = {
@@ -45,17 +51,27 @@ export class CartService {
       }
       cart.orderItems.push(cartItem);
       cart.totalPrice += Math.round(quantity * product.price * 100) / 100;
-      await cart.save({ session });
+      cart = (
+        await this.db.collection(this.orderCollection).findOneAndUpdate(
+          { _id: cart._id },
+          {
+            $set: {
+              ...cart,
+            },
+          },
+          { returnDocument: 'after' },
+        )
+      ).value;
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return cart;
   }
 
-  async updateProductFromCart(userId: MongooseSchema.Types.ObjectId, productId: MongooseSchema.Types.ObjectId, quantity: number, session: ClientSession) {
-    let user: any, cartItem: any, product: any, cart: any;
+  async updateProductFromCart(userId: string, productId: string, quantity: number): Promise<OrderInterface> {
+    let user: UserInterface, product: ProductInterface, cart: OrderInterface, cartItem: OrderItemInterface;
     try {
-      user = await this.userModel.findById(userId);
+      user = await this.db.collection(this.userCollection).findOne({ _id: new ObjectId(userId) });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -63,28 +79,42 @@ export class CartService {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
     try {
-      cart = await this.orderModel.findById(user.cart);
-      cartItem = await cart.orderItems.find((cartItem: any) => cartItem.product == productId);
-      product = await this.productModel.findById(productId);
+      cart = await this.db.collection(this.orderCollection).findOne({ _id: new ObjectId(user.cart), archived: false });
+      cartItem = cart.orderItems.find((cartItem: OrderItemInterface) => cartItem.product == productId);
+      product = await this.db.collection(this.productCollection).findOne({ _id: new ObjectId(productId) });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!cartItem || !product) {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'Product with ID not found');
     }
-    cart.orderItems = cart.orderItems.filter((cartItem: any) => cartItem.product != productId);
+    cart.orderItems = cart.orderItems.filter((cartItem: OrderItemInterface) => cartItem.product != productId);
     cart.totalPrice -= Math.round(cartItem.quantity * product.price * 100) / 100;
     cartItem.quantity = quantity;
     cart.orderItems.push(cartItem);
     cart.totalPrice += Math.round(cartItem.quantity * product.price * 100) / 100;
-    await cart.save({ session });
+    try {
+      cart = (
+        await this.db.collection(this.orderCollection).findOneAndUpdate(
+          { _id: cart._id },
+          {
+            $set: {
+              ...cart,
+            },
+          },
+          { returnDocument: 'after' },
+        )
+      ).value;
+    } catch (error) {
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
     return cart;
   }
 
-  async removeProductFromCart(userId: MongooseSchema.Types.ObjectId, productId: MongooseSchema.Types.ObjectId, session: ClientSession) {
-    let user: any, cartItem: any, cart: any, product: any;
+  async removeProductFromCart(userId: string, productId: string): Promise<OrderInterface> {
+    let user: UserInterface, product: ProductInterface, cart: OrderInterface, cartItem: OrderItemInterface;
     try {
-      user = await this.userModel.findById(userId);
+      user = await this.db.collection(this.userCollection).findOne({ _id: new ObjectId(userId) });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -92,48 +122,60 @@ export class CartService {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
     try {
-      cart = await this.orderModel.findById(user.cart);
-      cartItem = await cart.orderItems.find((cartItem: any) => cartItem.product == productId);
-      product = await this.productModel.findById(productId);
+      cart = await this.db.collection(this.orderCollection).findOne({ _id: new ObjectId(user.cart), archived: false });
+      cartItem = cart.orderItems.find((cartItem: OrderItemInterface) => cartItem.product == productId);
+      product = await this.db.collection(this.productCollection).findOne({ _id: new ObjectId(productId) });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!cartItem || !product) {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'Product with ID not found');
     }
-    cart.orderItems = cart.orderItems.filter((cartItem: any) => {
-      return cartItem.product != productId;
-    });
+    cart.orderItems = cart.orderItems.filter((cartItem: OrderItemInterface) => cartItem.product != productId);
     cart.totalPrice -= Math.round(cartItem.quantity * product.price * 100) / 100;
-    await cart.save({ session });
+    try {
+      cart = (
+        await this.db.collection(this.orderCollection).findOneAndUpdate(
+          { _id: cart._id },
+          {
+            $set: {
+              ...cart,
+            },
+          },
+          { returnDocument: 'after' },
+        )
+      ).value;
+    } catch (error) {
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
     return cart;
   }
 
-  async listProductsInCart(userId: MongooseSchema.Types.ObjectId) {
-    let user: any;
+  async listProductsInCart(userId: string): Promise<OrderInterface> {
+    let user: UserInterface;
     try {
-      user = await this.userModel.findById(userId);
+      user = await this.db.collection(this.userCollection).findOne({ _id: new ObjectId(userId) });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!user) {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
-    const cart = await this.orderModel.findById(user.cart);
+    const cart = await this.db.collection(this.orderCollection).findOne({ _id: new ObjectId(user.cart), archived: false });
     return cart;
   }
 
-  async payProductsInCart(userId: MongooseSchema.Types.ObjectId, money: number, session: ClientSession) {
-    let user: any;
+  async payProductsInCart(userId: string, money: number): Promise<PayOrderDto> {
+    let user: UserInterface;
     try {
-      user = await this.userModel.findById(userId);
+      user = await this.db.collection(this.userCollection).findOne({ _id: new ObjectId(userId) });
     } catch (error) {
       errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     if (!user) {
       errorHandlingException(logLabel, null, true, HttpStatus.NOT_FOUND, 'User with ID not found');
     }
-    const order = await this.orderModel.findById(user.cart);
+    const order = await this.db.collection(this.orderCollection).findOne({ _id: new ObjectId(user.cart), archived: false });
     if (money < order.totalPrice) {
       errorHandlingException(logLabel, null, true, HttpStatus.UNPROCESSABLE_ENTITY, 'Insufficient funds');
     }
@@ -141,31 +183,60 @@ export class CartService {
       errorHandlingException(logLabel, null, true, HttpStatus.UNPROCESSABLE_ENTITY, 'Product is sold out');
     }
     money -= order.totalPrice;
-    await this.updateProductsQuantity(order.orderItems, session);
-    await this.archiveOrder(user, order, session);
+    await this.updateProductsQuantity(order.orderItems);
+    await this.archiveOrder(user._id, order._id);
     return { order: order, moneyBack: money };
   }
 
-  async archiveOrder(user: any, order: any, session: ClientSession) {
-    const cart = new this.orderModel();
-    await cart.save({ session });
-    user.cart = cart._id;
-    order.archived = true;
-    await order.save({ session });
-    await user.save({ session });
-  }
+  async archiveOrder(userId: ObjectId, orderId: ObjectId): Promise<boolean> {
+    try {
+      const cartId = (await this.db.collection(this.orderCollection).insertOne({ ...this.initCartData })).insertedId;
 
-  async updateProductsQuantity(orderItems: any, session: ClientSession) {
-    for (const orderItem of orderItems) {
-      const product = await this.productModel.findById(orderItem.product);
-      product.quantity -= orderItem.quantity;
-      await product.save({ session });
+      await this.db.collection(this.orderCollection).updateOne(
+        { _id: orderId },
+        {
+          $set: {
+            archived: true,
+          },
+        },
+      );
+      await this.db.collection(this.userCollection).updateOne(
+        { _id: userId },
+        {
+          $set: {
+            cart: cartId,
+          },
+        },
+      );
+    } catch (error) {
+      errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    return true;
   }
 
-  async checkEnoughProducts(orderItems: any) {
+  async updateProductsQuantity(orderItems: [OrderItemInterface]): Promise<boolean> {
     for (const orderItem of orderItems) {
-      const product = await this.productModel.findById(orderItem.product);
+      try {
+        const product = await this.db.collection(this.productCollection).findOne({ _id: new ObjectId(orderItem.product) });
+        product.quantity -= orderItem.quantity;
+        await this.db.collection(this.productCollection).updateOne(
+          { _id: product._id },
+          {
+            $set: {
+              quantity: product.quantity,
+            },
+          },
+        );
+      } catch (error) {
+        errorHandlingException(logLabel, error, true, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    }
+    return true;
+  }
+
+  async checkEnoughProducts(orderItems: [OrderItemInterface]): Promise<boolean> {
+    for (const orderItem of orderItems) {
+      const product = await this.db.collection(this.productCollection).findOne({ _id: new ObjectId(orderItem.product) });
       if (product.quantity < orderItem.quantity) {
         return false;
       }
