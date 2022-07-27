@@ -8,7 +8,7 @@ export class ResponseProductDto {
   @IsDefined()
   @ApiProperty({
     type: ProductModel,
-    description: 'Title of the Product',
+    description: 'Product data',
     required: true,
   })
   data: ProductInterface;

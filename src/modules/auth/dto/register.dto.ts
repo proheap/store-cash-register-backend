@@ -74,7 +74,7 @@ export class RegisterDto {
   @IsOptional()
   @ApiProperty({
     type: Address,
-    description: 'Contact number of the User',
+    description: 'Address of the User',
     required: false,
   })
   address: Address;

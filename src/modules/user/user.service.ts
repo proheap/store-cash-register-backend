@@ -7,7 +7,7 @@ import { hashData, hashCompare } from '../../helpers/hash.helper';
 import { User as UserInterface, SecuredUser } from './interfaces/user.interface';
 import { UpdateUserDto } from './dto/updateUser.dto';
 import { ChangePasswordDto } from './dto/changePassword.dto';
-import { plainToClass, plainToInstance } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 
 const logLabel = 'USER-SERVICE';
 

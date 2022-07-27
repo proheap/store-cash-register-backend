@@ -7,9 +7,11 @@ import { appConstants } from '../../configs/app.config';
 import { swaggerConstants } from '../../configs/swagger.config';
 import { errorHandlingException } from '../../helpers/logger.helper';
 
+import { SecuredUser } from '../user/interfaces/user.interface';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { UserTokenDto } from './dto/userToken.dto';
 import { ResponseLoginDto } from './dto/responseLogin.dto';
 import { ResponseUserDto } from '../user/dto/responseUser.dto';
 import { PublicEndpoint } from '../../common/decorators/publicEndpoint.decorator';
@@ -37,7 +39,7 @@ export class AuthController {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const newUser: any = await this.authService.registerUser(registerDto);
+      const newUser: SecuredUser = await this.authService.registerUser(registerDto);
       await session.commitTransaction();
       return res.status(HttpStatus.CREATED).send({ data: newUser });
     } catch (error) {
@@ -63,7 +65,7 @@ export class AuthController {
     const session = await this.mongoConnection.startSession();
     session.startTransaction();
     try {
-      const user: any = await this.authService.loginUser(loginDto);
+      const user: UserTokenDto = await this.authService.loginUser(loginDto);
       await session.commitTransaction();
       return res.status(HttpStatus.OK).send({ data: user });
     } catch (error) {

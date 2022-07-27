@@ -9,7 +9,7 @@ import { hashData, hashCompare } from '../../helpers/hash.helper';
 import { SecuredUser, User as UserInterface } from '../user/interfaces/user.interface';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { ResponseLoginDto } from './dto/responseLogin.dto';
+import { UserTokenDto } from './dto/userToken.dto';
 import { JwtPayload } from './types/jwtPayload.type';
 import { plainToInstance } from 'class-transformer';
 
@@ -52,7 +52,7 @@ export class AuthService {
     return plainToInstance(SecuredUser, newUser);
   }
 
-  async loginUser(loginDto: LoginDto): Promise<ResponseLoginDto> {
+  async loginUser(loginDto: LoginDto): Promise<UserTokenDto> {
     let user: UserInterface, tokens: any;
     user = await this.db.collection(this.userCollection).findOne({ username: loginDto.username });
     if (!user) {

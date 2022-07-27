@@ -8,7 +8,7 @@ export class PayOrderDto {
   @IsNotEmpty()
   @ApiProperty({
     type: OrderModel,
-    description: 'Title of the Product',
+    description: 'Order data',
     required: true,
   })
   order: OrderInterface;

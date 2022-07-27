@@ -1,23 +1,14 @@
 import { IsDefined, ValidateNested } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { User as UserModel } from '../../../models/user.model';
-import { SecuredUser } from '../../user/interfaces/user.interface';
+import { UserTokenDto } from './userToken.dto';
 
 export class ResponseLoginDto {
   @ValidateNested({ each: true })
   @IsDefined()
   @ApiProperty({
-    type: UserModel,
+    type: UserTokenDto,
     description: 'User data',
     required: true,
   })
-  user: SecuredUser;
-
-  @IsDefined()
-  @ApiProperty({
-    type: String,
-    description: 'Access token for user',
-    required: true,
-  })
-  accessToken: string;
+  data: UserTokenDto;
 }

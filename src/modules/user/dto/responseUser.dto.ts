@@ -8,7 +8,7 @@ export class ResponseUserDto {
   @IsDefined()
   @ApiProperty({
     type: UserModel,
-    description: 'Title of the Product',
+    description: 'Secured user data',
     required: true,
   })
   data: SecuredUser;
